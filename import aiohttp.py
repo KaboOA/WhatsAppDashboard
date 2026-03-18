@@ -1,24 +1,46 @@
-import aiohttp
-import asyncio
+import requests
 
-async def send_message(config, phone, body):
-    url = f"https://graph.facebook.com/v21.0/1057331837443942/messages"
-    
-    headers = {
-        'Authorization': f"Bearer EAAWytxOTAecBQCx79epjNwizTC8SrvhAWlc2GrjTMX3lUdFzZANxSKVK9IZCd9i9i2NFfwmMmUYrOMr6ShWZCPK8OQNfOdO1XbQWWZCk8iyb3iZAmuUEZAxZCZCwCxRt7n1sUY3Rjdn62GFEOgtO7WMb6STVV5eagZCFceqiHYaLhmYvKIKq8mVk74TROGoHJUjoHOwZDZD",
-        'Content-Type': 'application/json'
-    }
-    
-    data = {
-        "messaging_product": "whatsapp",
-        "to": "201122267427",
-        "type": "text",
-        "text": { "body": "test" }
-    }
-    
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=headers, json=data) as res:
-            response_data = await res.json()
-            return response_data
+RAILWAY_URL = "https://whatsappdashboard-production.up.railway.app"
 
-asyncio.run(send_message(None, None, None))
+def send_whatsapp_template(to: str, temp_name: str, data: list[str]):
+    response = requests.post(
+        f"{RAILWAY_URL}/send",
+        json={
+            "to": to,
+            "tempName": temp_name,
+            "data": data
+        }
+    )
+    
+    result = response.json()
+    
+    if response.ok:
+        print(f"✅ Sent to {to} | ID: {result.get('id')}")
+    else:
+        print(f"❌ Failed to {to} | Error: {result.get('error')}")
+    
+    return result
+
+
+# ── Examples ────────────────────────────────────────────────────────────────
+
+# Single message
+send_whatsapp_template(
+    to="20122267427",
+    temp_name="koraiem_attendace_absent_template",
+    data=["أحمد قباري","الاول","22","السبت","⬅️الكود: 22669885⬅️الباسورد: 02569885"]
+)
+
+# # Bulk messages
+# students = [
+#     {"phone": "201111111111", "name": "Ahmed"},
+#     {"phone": "201222222222", "name": "Mohamed"},
+#     {"phone": "201333333333", "name": "Sara"},
+# ]
+
+# for student in students:
+    # send_whatsapp_template(
+    #     to=student["phone"],
+    #     temp_name="student_arrival",
+    #     data=[student["name"]]
+    # )
