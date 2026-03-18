@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeNerds — WhatsApp Dashboard</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
+    onerror="document.getElementById('supabaseLoadError').style.display='block'">
+    </script>
+  <script>
+    // Fallback CDN if jsDelivr fails
+    if (!window.supabase || !window.supabase.createClient) {
+      var s = document.createElement('script');
+      s.src = 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+      document.head.appendChild(s);
+    }
+  </script>
+
+  <!-- ── HARDCODED SUPABASE CONFIG (edit these two values) ── -->
+  <script>
+    const SUPABASE_URL = 'https://cbowikecdlirjcolehvc.supabase.co';   // ← replace
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNib3dpa2VjZGxpcmpjb2xlaHZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MDE0NzQsImV4cCI6MjA4OTI3NzQ3NH0.z8CVfotwo7aRxSWYvTSqpkybbThT-F8g1p33KLQK7zs';                 // ← replace
+  </script>
+  <style>
+    :root {
+      --bg: #0d0f12;
+      --surface: #141720;
+      --surface2: #1c2030;
+      --border: #252a3a;
+      --green: #25d366;
+      --green-dim: #1a9147;
+      --blue: #3b82f6;
+      --red: #ef4444;
+      --text: #e8eaf0;
+      --muted: #6b7280;
+      --sent-bg: #1a3a2a;
+      --recv-bg: #1c2030;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* LOGIN */
+    #loginScreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: 440px;
+      box-shadow: 0 0 60px rgba(37, 211, 102, 0.06);
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .login-logo .icon {
+      width: 44px;
+      height: 44px;
+      background: var(--green);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .login-logo h1 {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .login-logo span {
+      color: var(--muted);
+      font-size: 13px;
+      display: block;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'IBM Plex Mono', monospace;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus {
+      border-color: var(--green);
+    }
+
+    .btn-login {
+      width: 100%;
+      background: var(--green);
+      color: #000;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      margin-top: 8px;
+      transition: opacity 0.2s;
+    }
+
+    .btn-login:hover {
+      opacity: 0.88;
+    }
+
+    .section-divider {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      margin: 18px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* MAIN LAYOUT */
+    #mainApp {
+      display: none;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .topbar h1 {
+      font-size: 17px;
+      font-weight: 800;
+      flex: 1;
+    }
+
+    .meta-tag {
+      background: var(--green-dim);
+      color: var(--green);
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .realtime-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .dot.live {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.4
+      }
+    }
+
+    .btn-topbar {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 300px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-top {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Syne', sans-serif;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--green);
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .stat b {
+      color: var(--text);
+    }
+
+    .btn-new-chat {
+      margin: 10px 14px;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      padding: 7px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Syne', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .btn-new-chat:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .chat-list::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .chat-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+    }
+
+    .chat-item {
+      padding: 11px 14px;
+      display: flex;
+      gap: 11px;
+      align-items: center;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .chat-item:hover {
+      background: var(--surface2);
+    }
+
+    .chat-item.active {
+      background: var(--surface2);
+      border-left: 3px solid var(--green);
+      padding-left: 11px;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    .chat-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-name {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-preview {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    .chat-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .chat-time {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .unread-badge {
+      background: var(--green);
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+
+    /* CHAT AREA */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-header .name {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .chat-header .phone {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .msg-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: var(--bg);
+    }
+
+    .msg-list::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .msg-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+    }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 65%;
+    }
+
+    .msg.sent {
+      align-self: flex-end;
+    }
+
+    .msg.received {
+      align-self: flex-start;
+    }
+
+    .msg-bubble {
+      padding: 8px 13px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .msg.sent .msg-bubble {
+      background: var(--sent-bg);
+      border: 1px solid rgba(37, 211, 102, 0.15);
+      border-bottom-right-radius: 3px;
+    }
+
+    .msg.received .msg-bubble {
+      background: var(--recv-bg);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 3px;
+    }
+
+    .msg-footer {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 3px;
+      justify-content: flex-end;
+    }
+
+    .msg-time {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .tick {
+      font-size: 12px;
+    }
+
+    .tick.sending {
+      color: var(--muted);
+    }
+
+    .tick.sent {
+      color: var(--muted);
+    }
+
+    .tick.delivered {
+      color: var(--blue);
+    }
+
+    .tick.read {
+      color: var(--green);
+    }
+
+    .tick.failed {
+      color: var(--red);
+    }
+
+    .msg-input-area {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .msg-textarea {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 13px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: 'Syne', sans-serif;
+      outline: none;
+      resize: none;
+      min-height: 40px;
+      max-height: 120px;
+      line-height: 1.5;
+    }
+
+    .msg-textarea:focus {
+      border-color: var(--green);
+    }
+
+    .btn-send {
+      background: var(--green);
+      color: #000;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-send:hover {
+      opacity: 0.85;
+    }
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      background: var(--bg);
+    }
+
+    .empty-state .icon {
+      font-size: 44px;
+      opacity: 0.25;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 26px;
+      width: 370px;
+    }
+
+    .modal h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+    }
+
+    .btn-confirm {
+      flex: 1;
+      background: var(--green);
+      border: none;
+      color: #000;
+      padding: 9px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 11px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #toast.success {
+      border-color: var(--green);
+    }
+
+    #toast.error {
+      border-color: var(--red);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+  <div id="loginScreen">
+    <div class="login-box">
+      <div class="login-logo">
+        <div class="icon">💬</div>
+        <div>
+          <h1>CodeNerds</h1><span>WhatsApp Business Dashboard</span>
+        </div>
+      </div>
+
+      <!-- <div class="section-divider">SUPABASE CONFIG</div>
+      <div class="field">
+        <label>SUPABASE PROJECT URL</label>
+        <input type="text" id="cfgSupabaseUrl" placeholder="https://xxxx.supabase.co">
+      </div>
+      <div class="field">
+        <label>SUPABASE ANON KEY</label>
+        <input type="password" id="cfgSupabaseKey" placeholder="eyJhbGci...">
+      </div> -->
+
+      <div class="section-divider">META API CONFIG</div>
+      <div class="field">
+        <label>PHONE NUMBER ID</label>
+        <input type="text" id="cfgPhoneId" placeholder="123456789012345">
+      </div>
+      <div class="field">
+        <label>ACCESS TOKEN</label>
+        <input type="password" id="cfgToken" placeholder="EAAxxxx...">
+      </div>
+
+      <div id="supabaseLoadError"
+        style="display:none;background:#2a1a1a;border:1px solid var(--red);color:var(--red);padding:10px 14px;border-radius:8px;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-bottom:12px;">
+        ⚠ Supabase library failed to load. Check your internet connection and reload the page.
+      </div>
+
+      <button class="btn-login" onclick="login()">Open Dashboard →</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp">
+    <div class="topbar">
+      <h1>WhatsApp Dashboard</h1>
+      <span class="meta-tag">Meta Cloud API</span>
+      <div class="realtime-status">
+        <div class="dot" id="realtimeDot"></div>
+        <span id="realtimeLabel">Connecting...</span>
+      </div>
+      <button class="btn-topbar" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="workspace">
+      <div class="sidebar">
+        <div class="sidebar-top">
+          <input type="text" class="search-input" placeholder="🔍  Search..." oninput="filterChats(this.value)">
+        </div>
+        <div class="stats-bar">
+          <div class="stat">Chats <b id="statChats">0</b></div>
+          <div class="stat">Sent <b id="statSent">0</b></div>
+          <div class="stat">Unread <b id="statUnread">0</b></div>
+        </div>
+        <button class="btn-new-chat" onclick="openNewChatModal()">＋ New Conversation</button>
+        <div class="chat-list" id="chatList"></div>
+      </div>
+
+      <div class="chat-area" id="chatArea">
+        <div class="empty-state">
+          <div class="icon">💬</div>
+          <p>Select a conversation</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW CHAT MODAL -->
+  <div class="modal-overlay" id="newChatModal">
+    <div class="modal">
+      <h3>New Conversation</h3>
+      <div class="field">
+        <label>PHONE NUMBER (with country code)</label>
+        <input type="text" id="newPhone" placeholder="+201234567890">
+      </div>
+      <div class="field">
+        <label>CONTACT NAME</label>
+        <input type="text" id="newName" placeholder="Ahmed Mohamed">
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeNewChatModal()">Cancel</button>
+        <button class="btn-confirm" onclick="createNewChat()">Start Chat</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // ── STATE ──────────────────────────────────────────────────────────────────
+    let supabaseClient = null;
+    let config = {};
+    let chats = {};   // { phone: { name, phone, messages:[], unread:0 } }
+    let activePhone = null;
+    let realtimeChannel = null;
+
+    // ── LOGIN ──────────────────────────────────────────────────────────────────
+    function login() {
+      // const supabaseUrl = (document.getElementById('cfgSupabaseUrl').value.trim()) || SUPABASE_URL;
+      // const supabaseKey = (document.getElementById('cfgSupabaseKey').value.trim()) || SUPABASE_KEY;
+      const supabaseUrl = SUPABASE_URL;
+      const supabaseKey = SUPABASE_KEY;
+      const phoneId = document.getElementById('cfgPhoneId').value.trim();
+      const token = document.getElementById('cfgToken').value.trim();
+
+      if (!supabaseUrl || supabaseUrl === 'https://YOUR_PROJECT.supabase.co')
+        return toast('Please set your Supabase URL', 'error');
+      if (!supabaseKey || supabaseKey === 'YOUR_ANON_KEY_HERE')
+        return toast('Please set your Supabase Anon Key', 'error');
+      if (!phoneId || !token)
+        return toast('Fill in all Meta API fields', 'error');
+
+      config = { supabaseUrl, supabaseKey, phoneId, token };
+      localStorage.setItem('waCfg', JSON.stringify(config));
+      initApp();
+    }
+
+    function logout() {
+      if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+      config = {}; chats = {}; activePhone = null; supabaseClient = null;
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('mainApp').style.display = 'none';
+    }
+
+    // ── INIT ───────────────────────────────────────────────────────────────────
+    window.onload = () => {
+      // Pre-fill Supabase fields from hardcoded constants
+      document.getElementById('cfgSupabaseUrl').value = SUPABASE_URL;
+      document.getElementById('cfgSupabaseKey').value = SUPABASE_KEY;
+
+      const saved = localStorage.getItem('waCfg');
+      if (saved) {
+        config = JSON.parse(saved);
+        // Restore saved values (overrides constants if user previously saved different values)
+        document.getElementById('cfgSupabaseUrl').value = config.supabaseUrl || SUPABASE_URL;
+        document.getElementById('cfgSupabaseKey').value = config.supabaseKey || SUPABASE_KEY;
+        document.getElementById('cfgPhoneId').value = config.phoneId || '';
+        document.getElementById('cfgToken').value = config.token || '';
+        initApp();
+      }
+    };
+
+    async function initApp() {
+      try {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+
+        // Supabase CDN v2 UMD exposes window.supabase.createClient
+        const _sLib = window.supabase && window.supabase.createClient
+          ? window.supabase
+          : (typeof supabaseJs !== 'undefined' ? supabaseJs : null);
+
+        if (!_sLib) throw new Error('Supabase library failed to load. Check your internet connection and reload.');
+
+        supabaseClient = _sLib.createClient(config.supabaseUrl, config.supabaseKey);
+
+        // Load all messages from DB
+        await loadAllMessages();
+
+        // Subscribe to realtime
+        subscribeRealtime();
+
+      } catch (e) {
+        console.error('Init error:', e);
+        toast('Error: ' + e.message, 'error');
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+      }
+    }
+
+    // ── LOAD FROM SUPABASE ─────────────────────────────────────────────────────
+    async function loadAllMessages() {
+      const { data, error } = await supabaseClient
+        .from('messages')
+        .select('*')
+        .order('timestamp', { ascending: true });
+
+      if (error) return toast('DB load error: ' + error.message, 'error');
+
+      chats = {};
+      for (const msg of data) {
+        const phone = msg.direction === 'received' ? msg.from_phone : msg.from_phone;
+        if (!chats[phone]) chats[phone] = { name: msg.name || phone, phone, messages: [], unread: 0 };
+        chats[phone].messages.push({
+          id: msg.id, body: msg.body, direction: msg.direction,
+          status: msg.status, timestamp: msg.timestamp
+        });
+      }
+
+      renderChatList();
+      updateStats();
+    }
+
+    // ── SUPABASE REALTIME ──────────────────────────────────────────────────────
+    function subscribeRealtime() {
+      setRealtimeStatus(false);
+
+      realtimeChannel = supabaseClient
+        .channel('messages-changes')
+        .on('postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages' },
+          (payload) => {
+            const msg = payload.new;
+            const phone = msg.from_phone;
+            if (!chats[phone]) chats[phone] = { name: msg.name || phone, phone, messages: [], unread: 0 };
+            const exists = chats[phone].messages.find(m => m.id === msg.id);
+            if (!exists) {
+              chats[phone].messages.push({
+                id: msg.id, body: msg.body, direction: msg.direction,
+                status: msg.status, timestamp: msg.timestamp
+              });
+              if (activePhone !== phone) {
+                chats[phone].unread++;
+                toast(`📩 New message from ${msg.name || phone}`);
+              }
+              renderChatList();
+              updateStats();
+              if (activePhone === phone) renderMessages(phone);
+            }
+          }
+        )
+        .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'messages' },
+          (payload) => {
+            const updated = payload.new;
+            for (const phone of Object.keys(chats)) {
+              const m = chats[phone].messages.find(m => m.id === updated.id);
+              if (m) {
+                m.status = updated.status;
+                if (activePhone === phone) renderMessages(phone);
+                break;
+              }
+            }
+          }
+        )
+        .subscribe((status) => {
+          setRealtimeStatus(status === 'SUBSCRIBED');
+        });
+    }
+
+    function setRealtimeStatus(live) {
+      document.getElementById('realtimeDot').className = 'dot' + (live ? ' live' : '');
+      document.getElementById('realtimeLabel').textContent = live ? 'Realtime: live' : 'Realtime: off';
+    }
+
+    // ── SEND MESSAGE ───────────────────────────────────────────────────────────
+    async function sendMessage() {
+      if (!activePhone) return;
+      const ta = document.getElementById('msgInput');
+      const body = ta.value.trim();
+      if (!body) return;
+
+      const tmpId = 'tmp_' + Date.now();
+      const phone = activePhone;
+      const msg = { id: tmpId, body, direction: 'sent', status: 'sending', timestamp: Date.now() };
+
+      chats[phone].messages.push(msg);
+      ta.value = '';
+      ta.style.height = '40px';
+      renderMessages(phone);
+      renderChatList();
+
+      try {
+        const res = await fetch(`https://graph.facebook.com/v19.0/${config.phoneId}/messages`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${config.token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messaging_product: 'whatsapp',
+            to: phone.replace('+', ''),
+            type: 'text',
+            text: { body }
+          })
+        });
+        const data = await res.json();
+
+        if (data.messages?.[0]?.id) {
+          const realId = data.messages[0].id;
+          // Save to Supabase
+          await supabaseClient.from('messages').upsert({
+            id: realId, from_phone: phone,
+            name: chats[phone].name, body,
+            direction: 'sent', status: 'sent',
+            timestamp: Date.now()
+          }, { onConflict: 'id' });
+
+          // Update local tmp message
+          const m = chats[phone].messages.find(m => m.id === tmpId);
+          if (m) { m.id = realId; m.status = 'sent'; }
+        } else {
+          const m = chats[phone].messages.find(m => m.id === tmpId);
+          if (m) m.status = 'failed';
+          toast('Send failed: ' + (data.error?.message || 'Unknown'), 'error');
+        }
+      } catch {
+        const m = chats[phone].messages.find(m => m.id === tmpId);
+        if (m) m.status = 'failed';
+        toast('Network error', 'error');
+      }
+
+      renderMessages(phone);
+      updateStats();
+    }
+
+    // ── RENDER CHAT LIST ───────────────────────────────────────────────────────
+    function renderChatList(filter = '') {
+      const list = document.getElementById('chatList');
+      let sorted = Object.values(chats).sort((a, b) => {
+        return (b.messages.at(-1)?.timestamp || 0) - (a.messages.at(-1)?.timestamp || 0);
+      });
+      if (filter) sorted = sorted.filter(c =>
+        c.name.toLowerCase().includes(filter.toLowerCase()) || c.phone.includes(filter)
+      );
+
+      if (!sorted.length) {
+        list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">No conversations yet</div>`;
+        return;
+      }
+
+      list.innerHTML = sorted.map(chat => {
+        const last = chat.messages.at(-1);
+        const preview = last ? (last.direction === 'sent' ? '↑ ' : '↓ ') + last.body : '';
+        const time = last ? formatTime(last.timestamp) : '';
+        const initials = chat.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+        return `
+      <div class="chat-item ${activePhone === chat.phone ? 'active' : ''}" onclick="openChat('${esc(chat.phone)}')">
+        <div class="avatar">${initials}</div>
+        <div class="chat-info">
+          <div class="chat-name">${esc(chat.name)}</div>
+          <div class="chat-preview">${esc((preview || '').substring(0, 42))}</div>
+        </div>
+        <div class="chat-meta">
+          <div class="chat-time">${time}</div>
+          ${chat.unread ? `<div class="unread-badge">${chat.unread}</div>` : ''}
+        </div>
+      </div>`;
+      }).join('');
+    }
+
+    // ── OPEN CHAT ──────────────────────────────────────────────────────────────
+    function openChat(phone) {
+      activePhone = phone;
+      if (chats[phone]) chats[phone].unread = 0;
+      renderChatList();
+      updateStats();
+
+      const chat = chats[phone];
+      const initials = chat.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+
+      document.getElementById('chatArea').innerHTML = `
+    <div class="chat-header">
+      <div class="avatar" style="width:34px;height:34px;font-size:13px;">${initials}</div>
+      <div>
+        <div class="name">${esc(chat.name)}</div>
+        <div class="phone">${chat.phone}</div>
+      </div>
+    </div>
+    <div class="msg-list" id="msgList"></div>
+    <div class="msg-input-area">
+      <textarea class="msg-textarea" id="msgInput" placeholder="Type a message..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"
+        oninput="this.style.height='40px';this.style.height=this.scrollHeight+'px'"></textarea>
+      <button class="btn-send" onclick="sendMessage()">➤</button>
+    </div>`;
+      renderMessages(phone);
+    }
+
+    // ── RENDER MESSAGES ────────────────────────────────────────────────────────
+    function renderMessages(phone) {
+      const list = document.getElementById('msgList');
+      if (!list) return;
+      const msgs = chats[phone]?.messages || [];
+
+      const tickMap = { sending: '🕐', sent: '✓', delivered: '✓✓', read: '✓✓', failed: '✗' };
+
+      list.innerHTML = msgs.map(msg => {
+        const tick = tickMap[msg.status] || '';
+        const tickClass = ['delivered', 'read'].includes(msg.status) ? msg.status : msg.status === 'failed' ? 'failed' : 'sent';
+        return `
+      <div class="msg ${msg.direction}">
+        <div class="msg-bubble">${esc(msg.body)}</div>
+        <div class="msg-footer">
+          <span class="msg-time">${formatTime(msg.timestamp)}</span>
+          ${msg.direction === 'sent' ? `<span class="tick ${tickClass}">${tick}</span>` : ''}
+        </div>
+      </div>`;
+      }).join('');
+      list.scrollTop = list.scrollHeight;
+    }
+
+    // ── NEW CHAT ───────────────────────────────────────────────────────────────
+    function openNewChatModal() { document.getElementById('newChatModal').classList.add('open'); }
+    function closeNewChatModal() { document.getElementById('newChatModal').classList.remove('open'); }
+
+    function createNewChat() {
+      const raw = document.getElementById('newPhone').value.trim();
+      const name = document.getElementById('newName').value.trim() || raw;
+      const phone = normalizePhone(raw);
+      if (!phone) return toast('Enter a valid phone number', 'error');
+      if (!chats[phone]) chats[phone] = { name, phone, messages: [], unread: 0 };
+      closeNewChatModal();
+      renderChatList();
+      updateStats();
+      openChat(phone);
+    }
+
+    // ── HELPERS ────────────────────────────────────────────────────────────────
+    function filterChats(v) { renderChatList(v); }
+
+    function updateStats() {
+      const all = Object.values(chats);
+      document.getElementById('statChats').textContent = all.length;
+      document.getElementById('statSent').textContent = all.reduce((s, c) => s + c.messages.filter(m => m.direction === 'sent').length, 0);
+      document.getElementById('statUnread').textContent = all.reduce((s, c) => s + (c.unread || 0), 0);
+    }
+
+    function normalizePhone(p) {
+      let n = p.replace(/\D/g, '');
+      if (n.startsWith('0')) n = '20' + n.substring(1);
+      return '+' + n;
+    }
+
+    function formatTime(ts) {
+      const d = new Date(ts), now = new Date();
+      return d.toDateString() === now.toDateString()
+        ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : d.toLocaleDateString([], { day: '2-digit', month: 'short' });
+    }
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+    }
+
+    function toast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = `show ${type}`;
+      setTimeout(() => t.className = '', 3200);
+    }
+  </script>
+</body>
+
+</html>
