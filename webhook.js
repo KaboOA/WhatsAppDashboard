@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const { createClient } = require('@supabase/supabase-js')
 
-const app  = express()
+const app = express()
 app.use(express.json())
 
 const supabase = createClient(
@@ -12,8 +12,8 @@ const supabase = createClient(
 
 // ── GET: Meta webhook verification ──────────────────────────────────────────
 app.get('/webhook', (req, res) => {
-  const mode      = req.query['hub.mode']
-  const token     = req.query['hub.verify_token']
+  const mode = req.query['hub.mode']
+  const token = req.query['hub.verify_token']
   const challenge = req.query['hub.challenge']
 
   if (mode === 'subscribe' && token === process.env.WA_VERIFY_TOKEN) {
@@ -30,7 +30,14 @@ app.post('/webhook', async (req, res) => {
   res.sendStatus(200)
 
   try {
-    const value    = req.body.entry?.[0]?.changes?.[0]?.value
+    const value = req.body.entry?.[0]?.changes?.[0]?.value
+
+    // ✅ Only process messages from YOUR number
+    const ALLOWED_PHONE_ID = process.env.WA_PHONE_NUMBER_ID
+    if (value?.metadata?.phone_number_id !== ALLOWED_PHONE_ID) {
+      console.log('⚠️ Ignored — wrong phone number ID')
+      return
+    }
     const messages = value?.messages
     const statuses = value?.statuses
 
@@ -56,19 +63,19 @@ app.post('/webhook', async (req, res) => {
         }
 
         const from_phone = '+' + msg.from
-        const contact    = value.contacts?.find(c => c.wa_id === msg.from)
-        const name       = contact?.profile?.name || from_phone
+        const contact = value.contacts?.find(c => c.wa_id === msg.from)
+        const name = contact?.profile?.name || from_phone
 
         console.log(`📩 Incoming from ${name} (${from_phone}): ${msg.text.body}`)
 
         const { error } = await supabase.from('messages').upsert({
-          id:         msg.id,
+          id: msg.id,
           from_phone,
           name,
-          body:       msg.text.body,
-          direction:  'received',
-          status:     'delivered',
-          timestamp:  parseInt(msg.timestamp) * 1000,  // Meta sends seconds → ms
+          body: msg.text.body,
+          direction: 'received',
+          status: 'delivered',
+          timestamp: parseInt(msg.timestamp) * 1000,  // Meta sends seconds → ms
         }, { onConflict: 'id' })
 
         if (error) console.error('Insert error:', error.message)

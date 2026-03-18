@@ -955,17 +955,22 @@
       renderChatList();
 
       try {
-        const res = await fetch(`https://graph.facebook.com/v19.0/${config.phoneId}/messages`, {
+        const res = await fetch(`https://graph.facebook.com/v21.0/${config.phoneId}/messages`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${config.token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messaging_product: 'whatsapp',
+            recipient_type: 'individual',
             to: phone.replace('+', ''),
             type: 'text',
             text: { body }
           })
         });
         const data = await res.json();
+
+        if (!res.ok) {
+          console.error('WhatsApp API Error Response:', data);
+        }
 
         if (data.messages?.[0]?.id) {
           const realId = data.messages[0].id;
@@ -985,7 +990,8 @@
           if (m) m.status = 'failed';
           toast('Send failed: ' + (data.error?.message || 'Unknown'), 'error');
         }
-      } catch {
+      } catch (err) {
+        console.error('Network Error:', err);
         const m = chats[phone].messages.find(m => m.id === tmpId);
         if (m) m.status = 'failed';
         toast('Network error', 'error');
