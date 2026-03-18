@@ -87,6 +87,66 @@ app.post('/webhook', async (req, res) => {
     console.error('Webhook crash:', e.message)
   }
 })
+// send msg
+app.post('/send', async (req, res) => {
+  const { to, tempName, data } = req.body
+  // data = array of strings e.g. ['Ahmed', 'Math', '10:00 AM']
 
+  try {
+    const metaRes = await fetch(
+      `https://graph.facebook.com/v21.0/${process.env.WA_PHONE_NUMBER_ID}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.WA_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to,
+          type: 'template',
+          template: {
+            name: tempName,
+            language: { code: 'en' },
+            components: data?.length ? [
+              {
+                type: 'body',
+                parameters: data.map(text => ({ type: 'text', text }))
+              }
+            ] : []
+          }
+        }),
+      }
+    )
+
+    const metaData = await metaRes.json()
+
+    if (!metaRes.ok) {
+      console.error('Meta API error:', metaData)
+      return res.status(500).json({ error: metaData })
+    }
+
+    const msgId = metaData.messages?.[0]?.id
+
+    const { error } = await supabase.from('messages').insert({
+      id: msgId,
+      from_phone: process.env.WA_BUSINESS_PHONE,
+      to_phone: to,
+      name: 'أستاذ كُريِّم - لغة عربية',
+      body: `[${tempName}] ${data?.join(' | ')}`,
+      direction: 'sent',
+      status: 'sent',
+      timestamp: Date.now(),
+    })
+
+    if (error) console.error('Supabase insert error:', error.message)
+
+    res.json({ success: true, id: msgId })
+
+  } catch (e) {
+    console.error('Send error:', e.message)
+    res.status(500).json({ error: e.message })
+  }
+})
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log(`🚀 Webhook server running on port ${PORT}`))
