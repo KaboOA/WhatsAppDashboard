@@ -26,7 +26,7 @@ def send_whatsapp_template(to: str, temp_name: str, data: list[str]):
 
 # Single message
 send_whatsapp_template(
-    to="20122267427",
+    to="201122267427",
     temp_name="koraiem_attendace_absent_template",
     data=["أحمد قباري","الاول","22","السبت","⬅️الكود: 22669885⬅️الباسورد: 02569885"]
 )

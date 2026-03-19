@@ -9,10 +9,8 @@
     href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap"
     rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
-    onerror="document.getElementById('supabaseLoadError').style.display='block'">
-    </script>
+    onerror="document.getElementById('supabaseLoadError').style.display='block'"></script>
   <script>
-    // Fallback CDN if jsDelivr fails
     if (!window.supabase || !window.supabase.createClient) {
       var s = document.createElement('script');
       s.src = 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';
@@ -20,11 +18,11 @@
     }
   </script>
 
-  <!-- ── HARDCODED SUPABASE CONFIG (edit these two values) ── -->
   <script>
-    const SUPABASE_URL = 'https://cbowikecdlirjcolehvc.supabase.co';   // ← replace
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNib3dpa2VjZGxpcmpjb2xlaHZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MDE0NzQsImV4cCI6MjA4OTI3NzQ3NH0.z8CVfotwo7aRxSWYvTSqpkybbThT-F8g1p33KLQK7zs';                 // ← replace
+    const SUPABASE_URL = 'https://cbowikecdlirjcolehvc.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNib3dpa2VjZGxpcmpjb2xlaHZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MDE0NzQsImV4cCI6MjA4OTI3NzQ3NH0.z8CVfotwo7aRxSWYvTSqpkybbThT-F8g1p33KLQK7zs';
   </script>
+
   <style>
     :root {
       --bg: #0d0f12;
@@ -41,11 +39,7 @@
       --recv-bg: #1c2030;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       background: var(--bg);
@@ -90,20 +84,10 @@
       font-size: 22px;
     }
 
-    .login-logo h1 {
-      font-size: 22px;
-      font-weight: 800;
-    }
+    .login-logo h1 { font-size: 22px; font-weight: 800; }
+    .login-logo span { color: var(--muted); font-size: 13px; display: block; }
 
-    .login-logo span {
-      color: var(--muted);
-      font-size: 13px;
-      display: block;
-    }
-
-    .field {
-      margin-bottom: 14px;
-    }
+    .field { margin-bottom: 14px; }
 
     .field label {
       display: block;
@@ -127,9 +111,7 @@
       transition: border-color 0.2s;
     }
 
-    .field input:focus {
-      border-color: var(--green);
-    }
+    .field input:focus { border-color: var(--green); }
 
     .btn-login {
       width: 100%;
@@ -146,9 +128,7 @@
       transition: opacity 0.2s;
     }
 
-    .btn-login:hover {
-      opacity: 0.88;
-    }
+    .btn-login:hover { opacity: 0.88; }
 
     .section-divider {
       font-size: 11px;
@@ -176,11 +156,7 @@
       flex-shrink: 0;
     }
 
-    .topbar h1 {
-      font-size: 17px;
-      font-weight: 800;
-      flex: 1;
-    }
+    .topbar h1 { font-size: 17px; font-weight: 800; flex: 1; }
 
     .meta-tag {
       background: var(--green-dim);
@@ -214,17 +190,7 @@
       animation: pulse 2s infinite;
     }
 
-    @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1
-      }
-
-      50% {
-        opacity: 0.4
-      }
-    }
+    @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
 
     .btn-topbar {
       background: none;
@@ -237,11 +203,7 @@
       font-family: 'Syne', sans-serif;
     }
 
-    .workspace {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
+    .workspace { display: flex; flex: 1; overflow: hidden; }
 
     /* SIDEBAR */
     .sidebar {
@@ -273,8 +235,31 @@
       outline: none;
     }
 
-    .search-input:focus {
+    .search-input:focus { border-color: var(--green); }
+
+    .filter-bar {
+      display: flex;
+      gap: 6px;
+      padding: 6px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
       border-color: var(--green);
+      color: var(--green);
+      background: rgba(37, 211, 102, 0.08);
     }
 
     .stats-bar {
@@ -290,9 +275,7 @@
       font-family: 'IBM Plex Mono', monospace;
     }
 
-    .stat b {
-      color: var(--text);
-    }
+    .stat b { color: var(--text); }
 
     .btn-new-chat {
       margin: 10px 14px;
@@ -307,23 +290,11 @@
       transition: all 0.2s;
     }
 
-    .btn-new-chat:hover {
-      border-color: var(--green);
-      color: var(--green);
-    }
+    .btn-new-chat:hover { border-color: var(--green); color: var(--green); }
 
-    .chat-list {
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .chat-list::-webkit-scrollbar {
-      width: 3px;
-    }
-
-    .chat-list::-webkit-scrollbar-thumb {
-      background: var(--border);
-    }
+    .chat-list { flex: 1; overflow-y: auto; }
+    .chat-list::-webkit-scrollbar { width: 3px; }
+    .chat-list::-webkit-scrollbar-thumb { background: var(--border); }
 
     .chat-item {
       padding: 11px 14px;
@@ -335,9 +306,7 @@
       transition: background 0.15s;
     }
 
-    .chat-item:hover {
-      background: var(--surface2);
-    }
+    .chat-item:hover { background: var(--surface2); }
 
     .chat-item.active {
       background: var(--surface2);
@@ -359,10 +328,7 @@
       flex-shrink: 0;
     }
 
-    .chat-info {
-      flex: 1;
-      min-width: 0;
-    }
+    .chat-info { flex: 1; min-width: 0; }
 
     .chat-name {
       font-size: 13px;
@@ -425,16 +391,8 @@
       gap: 12px;
     }
 
-    .chat-header .name {
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .chat-header .phone {
-      font-size: 11px;
-      color: var(--muted);
-      font-family: 'IBM Plex Mono', monospace;
-    }
+    .chat-header .name { font-size: 14px; font-weight: 700; }
+    .chat-header .phone { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
 
     .msg-list {
       flex: 1;
@@ -446,33 +404,19 @@
       background: var(--bg);
     }
 
-    .msg-list::-webkit-scrollbar {
-      width: 3px;
-    }
+    .msg-list::-webkit-scrollbar { width: 3px; }
+    .msg-list::-webkit-scrollbar-thumb { background: var(--border); }
 
-    .msg-list::-webkit-scrollbar-thumb {
-      background: var(--border);
-    }
-
-    .msg {
-      display: flex;
-      flex-direction: column;
-      max-width: 65%;
-    }
-
-    .msg.sent {
-      align-self: flex-end;
-    }
-
-    .msg.received {
-      align-self: flex-start;
-    }
+    .msg { display: flex; flex-direction: column; max-width: 65%; }
+    .msg.sent { align-self: flex-end; }
+    .msg.received { align-self: flex-start; }
 
     .msg-bubble {
       padding: 8px 13px;
       border-radius: 12px;
       font-size: 13px;
       line-height: 1.5;
+      word-wrap: break-word;
     }
 
     .msg.sent .msg-bubble {
@@ -501,29 +445,12 @@
       font-family: 'IBM Plex Mono', monospace;
     }
 
-    .tick {
-      font-size: 12px;
-    }
-
-    .tick.sending {
-      color: var(--muted);
-    }
-
-    .tick.sent {
-      color: var(--muted);
-    }
-
-    .tick.delivered {
-      color: var(--muted);
-    }
-
-    .tick.read {
-      color: var(--blue);
-    }
-
-    .tick.failed {
-      color: var(--red);
-    }
+    .tick { font-size: 12px; }
+    .tick.sending { color: var(--muted); }
+    .tick.sent { color: var(--muted); }
+    .tick.delivered { color: var(--muted); }
+    .tick.read { color: var(--blue); }
+    .tick.failed { color: var(--red); }
 
     .msg-input-area {
       background: var(--surface);
@@ -550,9 +477,7 @@
       line-height: 1.5;
     }
 
-    .msg-textarea:focus {
-      border-color: var(--green);
-    }
+    .msg-textarea:focus { border-color: var(--green); }
 
     .btn-send {
       background: var(--green);
@@ -570,9 +495,7 @@
       transition: opacity 0.2s;
     }
 
-    .btn-send:hover {
-      opacity: 0.85;
-    }
+    .btn-send:hover { opacity: 0.85; }
 
     .empty-state {
       flex: 1;
@@ -585,9 +508,22 @@
       background: var(--bg);
     }
 
-    .empty-state .icon {
-      font-size: 44px;
-      opacity: 0.25;
+    .empty-state .icon { font-size: 44px; opacity: 0.25; }
+
+    /* DATE SEPARATOR */
+    .date-sep {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      padding: 12px 0 6px;
+    }
+
+    .date-sep span {
+      background: var(--surface);
+      padding: 3px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
     }
 
     /* MODAL */
@@ -601,9 +537,7 @@
       justify-content: center;
     }
 
-    .modal-overlay.open {
-      display: flex;
-    }
+    .modal-overlay.open { display: flex; }
 
     .modal {
       background: var(--surface);
@@ -613,17 +547,9 @@
       width: 370px;
     }
 
-    .modal h3 {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 18px;
-    }
+    .modal h3 { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
 
-    .modal-btns {
-      display: flex;
-      gap: 10px;
-      margin-top: 18px;
-    }
+    .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
 
     .btn-cancel {
       flex: 1;
@@ -668,18 +594,9 @@
       pointer-events: none;
     }
 
-    #toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    #toast.success {
-      border-color: var(--green);
-    }
-
-    #toast.error {
-      border-color: var(--red);
-    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.success { border-color: var(--green); }
+    #toast.error { border-color: var(--red); }
   </style>
 </head>
 
@@ -695,16 +612,6 @@
         </div>
       </div>
 
-      <!-- <div class="section-divider">SUPABASE CONFIG</div>
-      <div class="field">
-        <label>SUPABASE PROJECT URL</label>
-        <input type="text" id="cfgSupabaseUrl" placeholder="https://xxxx.supabase.co">
-      </div>
-      <div class="field">
-        <label>SUPABASE ANON KEY</label>
-        <input type="password" id="cfgSupabaseKey" placeholder="eyJhbGci...">
-      </div> -->
-
       <div class="section-divider">META API CONFIG</div>
       <div class="field">
         <label>PHONE NUMBER ID</label>
@@ -717,7 +624,7 @@
 
       <div id="supabaseLoadError"
         style="display:none;background:#2a1a1a;border:1px solid var(--red);color:var(--red);padding:10px 14px;border-radius:8px;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-bottom:12px;">
-        ⚠ Supabase library failed to load. Check your internet connection and reload the page.
+        ⚠ Supabase library failed to load. Check your internet connection and reload.
       </div>
 
       <button class="btn-login" onclick="login()">Open Dashboard →</button>
@@ -741,9 +648,14 @@
         <div class="sidebar-top">
           <input type="text" class="search-input" placeholder="🔍  Search..." oninput="filterChats(this.value)">
         </div>
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+          <button class="filter-btn" data-filter="unread" onclick="setFilter('unread', this)">Unread</button>
+        </div>
         <div class="stats-bar">
           <div class="stat">Chats <b id="statChats">0</b></div>
           <div class="stat">Sent <b id="statSent">0</b></div>
+          <div class="stat">Recv <b id="statRecv">0</b></div>
           <div class="stat">Unread <b id="statUnread">0</b></div>
         </div>
         <button class="btn-new-chat" onclick="openNewChatModal()">＋ New Conversation</button>
@@ -784,25 +696,20 @@
     // ── STATE ──────────────────────────────────────────────────────────────────
     let supabaseClient = null;
     let config = {};
-    let chats = {};   // { phone: { name, phone, messages:[], unread:0 } }
+    let chats = {};        // keyed by contact_phone: { name, phone, messages:[], unread:0 }
     let activePhone = null;
     let realtimeChannel = null;
+    let currentFilter = 'all';
+    let searchQuery = '';
 
     // ── LOGIN ──────────────────────────────────────────────────────────────────
     function login() {
-      // const supabaseUrl = (document.getElementById('cfgSupabaseUrl').value.trim()) || SUPABASE_URL;
-      // const supabaseKey = (document.getElementById('cfgSupabaseKey').value.trim()) || SUPABASE_KEY;
       const supabaseUrl = SUPABASE_URL;
       const supabaseKey = SUPABASE_KEY;
       const phoneId = document.getElementById('cfgPhoneId').value.trim();
       const token = document.getElementById('cfgToken').value.trim();
 
-      if (!supabaseUrl || supabaseUrl === 'https://YOUR_PROJECT.supabase.co')
-        return toast('Please set your Supabase URL', 'error');
-      if (!supabaseKey || supabaseKey === 'YOUR_ANON_KEY_HERE')
-        return toast('Please set your Supabase Anon Key', 'error');
-      if (!phoneId || !token)
-        return toast('Fill in all Meta API fields', 'error');
+      if (!phoneId || !token) return toast('Fill in all Meta API fields', 'error');
 
       config = { supabaseUrl, supabaseKey, phoneId, token };
       localStorage.setItem('waCfg', JSON.stringify(config));
@@ -818,16 +725,9 @@
 
     // ── INIT ───────────────────────────────────────────────────────────────────
     window.onload = () => {
-      // Pre-fill Supabase fields from hardcoded constants
-      document.getElementById('cfgSupabaseUrl').value = SUPABASE_URL;
-      document.getElementById('cfgSupabaseKey').value = SUPABASE_KEY;
-
       const saved = localStorage.getItem('waCfg');
       if (saved) {
         config = JSON.parse(saved);
-        // Restore saved values (overrides constants if user previously saved different values)
-        document.getElementById('cfgSupabaseUrl').value = config.supabaseUrl || SUPABASE_URL;
-        document.getElementById('cfgSupabaseKey').value = config.supabaseKey || SUPABASE_KEY;
         document.getElementById('cfgPhoneId').value = config.phoneId || '';
         document.getElementById('cfgToken').value = config.token || '';
         initApp();
@@ -839,19 +739,15 @@
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
 
-        // Supabase CDN v2 UMD exposes window.supabase.createClient
         const _sLib = window.supabase && window.supabase.createClient
           ? window.supabase
           : (typeof supabaseJs !== 'undefined' ? supabaseJs : null);
 
-        if (!_sLib) throw new Error('Supabase library failed to load. Check your internet connection and reload.');
+        if (!_sLib) throw new Error('Supabase library failed to load.');
 
-        supabaseClient = _sLib.createClient(config.supabaseUrl, config.supabaseKey);
+        supabaseClient = _sLib.createClient(config.supabaseUrl || SUPABASE_URL, config.supabaseKey || SUPABASE_KEY);
 
-        // Load all messages from DB
         await loadAllMessages();
-
-        // Subscribe to realtime
         subscribeRealtime();
 
       } catch (e) {
@@ -873,16 +769,61 @@
 
       chats = {};
       for (const msg of data) {
-        const phone = msg.direction === 'received' ? msg.from_phone : msg.from_phone;
-        if (!chats[phone]) chats[phone] = { name: msg.name || phone, phone, messages: [], unread: 0 };
-        chats[phone].messages.push({
-          id: msg.id, body: msg.body, direction: msg.direction,
-          status: msg.status, timestamp: msg.timestamp
-        });
+        addMessageToChats(msg);
       }
 
       renderChatList();
       updateStats();
+    }
+
+    /**
+     * Core logic: group every message under the CONTACT's phone number.
+     * - Received messages: contact is msg.contact_phone (the sender)
+     * - Sent messages:     contact is msg.contact_phone (the recipient)
+     *
+     * Fallback for old DB rows that still use from_phone / to_phone:
+     *   sent    → use to_phone as contact
+     *   received→ use from_phone as contact
+     */
+    function getContactPhone(msg) {
+      if (msg.contact_phone) return msg.contact_phone;
+      // Fallback for legacy schema
+      if (msg.direction === 'sent') return msg.to_phone || msg.from_phone;
+      return msg.from_phone;
+    }
+
+    function addMessageToChats(msg) {
+      const phone = getContactPhone(msg);
+      if (!phone) return; // skip broken rows
+
+      if (!chats[phone]) {
+        chats[phone] = {
+          name: msg.contact_name || msg.name || phone,
+          phone,
+          messages: [],
+          unread: 0
+        };
+      }
+
+      // Update contact name if we get a better one (from a received message)
+      const c = chats[phone];
+      const newName = msg.contact_name || msg.name;
+      if (newName && newName !== phone && c.name === phone) {
+        c.name = newName;
+      }
+
+      // Avoid duplicates
+      if (!c.messages.find(m => m.id === msg.id)) {
+        c.messages.push({
+          id: msg.id,
+          body: msg.body,
+          direction: msg.direction,
+          status: msg.status,
+          timestamp: msg.timestamp
+        });
+        // Sort by time
+        c.messages.sort((a, b) => a.timestamp - b.timestamp);
+      }
     }
 
     // ── SUPABASE REALTIME ──────────────────────────────────────────────────────
@@ -895,22 +836,19 @@
           { event: 'INSERT', schema: 'public', table: 'messages' },
           (payload) => {
             const msg = payload.new;
-            const phone = msg.from_phone;
-            if (!chats[phone]) chats[phone] = { name: msg.name || phone, phone, messages: [], unread: 0 };
-            const exists = chats[phone].messages.find(m => m.id === msg.id);
-            if (!exists) {
-              chats[phone].messages.push({
-                id: msg.id, body: msg.body, direction: msg.direction,
-                status: msg.status, timestamp: msg.timestamp
-              });
-              if (activePhone !== phone) {
-                chats[phone].unread++;
-                toast(`📩 New message from ${msg.name || phone}`);
-              }
-              renderChatList();
-              updateStats();
-              if (activePhone === phone) renderMessages(phone);
+            const phone = getContactPhone(msg);
+
+            addMessageToChats(msg);
+
+            // Notify if it's an incoming message and chat isn't active
+            if (msg.direction === 'received' && activePhone !== phone) {
+              chats[phone].unread++;
+              toast(`📩 New message from ${chats[phone].name}`);
             }
+
+            renderChatList();
+            updateStats();
+            if (activePhone === phone) renderMessages(phone);
           }
         )
         .on('postgres_changes',
@@ -922,6 +860,7 @@
               if (m) {
                 m.status = updated.status;
                 if (activePhone === phone) renderMessages(phone);
+                renderChatList(); // update tick in preview
                 break;
               }
             }
@@ -937,7 +876,7 @@
       document.getElementById('realtimeLabel').textContent = live ? 'Realtime: live' : 'Realtime: off';
     }
 
-    // ── SEND MESSAGE ───────────────────────────────────────────────────────────
+    // ── SEND MESSAGE (free-form text via Meta API directly) ────────────────────
     async function sendMessage() {
       if (!activePhone) return;
       const ta = document.getElementById('msgInput');
@@ -957,7 +896,10 @@
       try {
         const res = await fetch(`https://graph.facebook.com/v21.0/${config.phoneId}/messages`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${config.token}`, 'Content-Type': 'application/json' },
+          headers: {
+            'Authorization': `Bearer ${config.token}`,
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({
             messaging_product: 'whatsapp',
             recipient_type: 'individual',
@@ -968,21 +910,21 @@
         });
         const data = await res.json();
 
-        if (!res.ok) {
-          console.error('WhatsApp API Error Response:', data);
-        }
-
         if (data.messages?.[0]?.id) {
           const realId = data.messages[0].id;
-          // Save to Supabase
+
+          // Save to Supabase with contact_phone = the recipient
           await supabaseClient.from('messages').upsert({
-            id: realId, from_phone: phone,
-            name: chats[phone].name, body,
-            direction: 'sent', status: 'sent',
+            id: realId,
+            contact_phone: phone,
+            contact_name: chats[phone].name !== phone ? chats[phone].name : null,
+            body,
+            direction: 'sent',
+            status: 'sent',
             timestamp: Date.now()
           }, { onConflict: 'id' });
 
-          // Update local tmp message
+          // Update local temp message
           const m = chats[phone].messages.find(m => m.id === tmpId);
           if (m) { m.id = realId; m.status = 'sent'; }
         } else {
@@ -998,21 +940,34 @@
       }
 
       renderMessages(phone);
+      renderChatList();
       updateStats();
     }
 
     // ── RENDER CHAT LIST ───────────────────────────────────────────────────────
-    function renderChatList(filter = '') {
+    function renderChatList() {
       const list = document.getElementById('chatList');
       let sorted = Object.values(chats).sort((a, b) => {
         return (b.messages.at(-1)?.timestamp || 0) - (a.messages.at(-1)?.timestamp || 0);
       });
-      if (filter) sorted = sorted.filter(c =>
-        c.name.toLowerCase().includes(filter.toLowerCase()) || c.phone.includes(filter)
-      );
+
+      // Apply filter
+      if (currentFilter === 'unread') {
+        sorted = sorted.filter(c => c.unread > 0);
+      }
+
+      // Apply search
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        sorted = sorted.filter(c =>
+          c.name.toLowerCase().includes(q) || c.phone.includes(q)
+        );
+      }
 
       if (!sorted.length) {
-        list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">No conversations yet</div>`;
+        list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">
+          ${currentFilter === 'unread' ? 'No unread conversations' : 'No conversations yet'}
+        </div>`;
         return;
       }
 
@@ -1020,7 +975,7 @@
         const last = chat.messages.at(-1);
         const preview = last ? (last.direction === 'sent' ? '↑ ' : '↓ ') + last.body : '';
         const time = last ? formatTime(last.timestamp) : '';
-        const initials = chat.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+        const initials = getInitials(chat.name);
         return `
       <div class="chat-item ${activePhone === chat.phone ? 'active' : ''}" onclick="openChat('${esc(chat.phone)}')">
         <div class="avatar">${initials}</div>
@@ -1044,7 +999,7 @@
       updateStats();
 
       const chat = chats[phone];
-      const initials = chat.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      const initials = getInitials(chat.name);
 
       document.getElementById('chatArea').innerHTML = `
     <div class="chat-header">
@@ -1070,12 +1025,28 @@
       if (!list) return;
       const msgs = chats[phone]?.messages || [];
 
-      const tickMap = { sending: '🕐', sent: '✓', delivered: '✓✓', read: '✓✓', failed: '✗' };
+      const tickMap = {
+        sending: '🕐', sent: '✓', delivered: '✓✓', read: '✓✓', failed: '✗'
+      };
 
-      list.innerHTML = msgs.map(msg => {
+      let html = '';
+      let lastDateStr = '';
+
+      for (const msg of msgs) {
+        // Date separator
+        const dateStr = new Date(msg.timestamp).toDateString();
+        if (dateStr !== lastDateStr) {
+          lastDateStr = dateStr;
+          html += `<div class="date-sep"><span>${formatDateLabel(msg.timestamp)}</span></div>`;
+        }
+
         const tick = tickMap[msg.status] || '';
-        const tickClass = ['delivered', 'read'].includes(msg.status) ? msg.status : msg.status === 'failed' ? 'failed' : 'sent';
-        return `
+        const tickClass = msg.status === 'read' ? 'read'
+          : msg.status === 'delivered' ? 'delivered'
+          : msg.status === 'failed' ? 'failed'
+          : 'sent';
+
+        html += `
       <div class="msg ${msg.direction}">
         <div class="msg-bubble">${esc(msg.body)}</div>
         <div class="msg-footer">
@@ -1083,7 +1054,9 @@
           ${msg.direction === 'sent' ? `<span class="tick ${tickClass}">${tick}</span>` : ''}
         </div>
       </div>`;
-      }).join('');
+      }
+
+      list.innerHTML = html;
       list.scrollTop = list.scrollHeight;
     }
 
@@ -1095,39 +1068,70 @@
       const raw = document.getElementById('newPhone').value.trim();
       const name = document.getElementById('newName').value.trim() || raw;
       const phone = normalizePhone(raw);
-      if (!phone) return toast('Enter a valid phone number', 'error');
+      if (!phone || phone === '+') return toast('Enter a valid phone number', 'error');
       if (!chats[phone]) chats[phone] = { name, phone, messages: [], unread: 0 };
+      else if (name !== raw) chats[phone].name = name; // update name
       closeNewChatModal();
+      document.getElementById('newPhone').value = '';
+      document.getElementById('newName').value = '';
       renderChatList();
       updateStats();
       openChat(phone);
     }
 
-    // ── HELPERS ────────────────────────────────────────────────────────────────
-    function filterChats(v) { renderChatList(v); }
+    // ── FILTER ─────────────────────────────────────────────────────────────────
+    function setFilter(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderChatList();
+    }
 
+    function filterChats(v) {
+      searchQuery = v;
+      renderChatList();
+    }
+
+    // ── HELPERS ────────────────────────────────────────────────────────────────
     function updateStats() {
       const all = Object.values(chats);
       document.getElementById('statChats').textContent = all.length;
-      document.getElementById('statSent').textContent = all.reduce((s, c) => s + c.messages.filter(m => m.direction === 'sent').length, 0);
-      document.getElementById('statUnread').textContent = all.reduce((s, c) => s + (c.unread || 0), 0);
+      document.getElementById('statSent').textContent = all.reduce((s, c) =>
+        s + c.messages.filter(m => m.direction === 'sent').length, 0);
+      document.getElementById('statRecv').textContent = all.reduce((s, c) =>
+        s + c.messages.filter(m => m.direction === 'received').length, 0);
+      document.getElementById('statUnread').textContent = all.reduce((s, c) =>
+        s + (c.unread || 0), 0);
     }
 
     function normalizePhone(p) {
       let n = p.replace(/\D/g, '');
       if (n.startsWith('0')) n = '20' + n.substring(1);
+      if (!n) return '';
       return '+' + n;
     }
 
+    function getInitials(name) {
+      if (!name || name.startsWith('+')) return '?';
+      return name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+    }
+
     function formatTime(ts) {
+      const d = new Date(ts);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDateLabel(ts) {
       const d = new Date(ts), now = new Date();
-      return d.toDateString() === now.toDateString()
-        ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : d.toLocaleDateString([], { day: '2-digit', month: 'short' });
+      if (d.toDateString() === now.toDateString()) return 'Today';
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+      return d.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
     }
 
     function esc(str) {
-      return String(str)
+      return String(str || '')
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
     }
 
