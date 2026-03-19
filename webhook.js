@@ -95,6 +95,38 @@ app.post('/webhook', async (req, res) => {
   }
 })
 
+// ── Helper: fetch template text from Meta & render with parameters ───────────
+async function renderTemplate(tempName, data) {
+  try {
+    const url = `https://graph.facebook.com/v21.0/${process.env.WA_WABA_ID}/message_templates?name=${tempName}`
+    const res = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${process.env.WA_ACCESS_TOKEN}` }
+    })
+    const json = await res.json()
+
+    const template = json.data?.[0]
+    if (!template) return `[${tempName}] ${data?.join(' | ') || ''}`
+
+    // Find the BODY component text
+    const bodyComp = template.components?.find(c => c.type === 'BODY')
+    if (!bodyComp?.text) return `[${tempName}] ${data?.join(' | ') || ''}`
+
+    // Replace {{1}}, {{2}}, etc. with actual data values
+    let rendered = bodyComp.text
+    if (data?.length) {
+      data.forEach((val, i) => {
+        rendered = rendered.replace(`{{${i + 1}}}`, val)
+      })
+    }
+
+    return rendered
+  } catch (e) {
+    console.error('Template fetch error:', e.message)
+    // Fallback to the old format if fetch fails
+    return `[${tempName}] ${data?.join(' | ') || ''}`
+  }
+}
+
 // ── POST: Send a template message ────────────────────────────────────────────
 app.post('/send', async (req, res) => {
   const { to, tempName, data } = req.body
@@ -138,68 +170,14 @@ app.post('/send', async (req, res) => {
     // Normalize the recipient phone
     let contactPhone = to.startsWith('+') ? to : '+' + to
 
+    // Fetch & render the actual template message content
+    const renderedBody = await renderTemplate(tempName, data)
+
     const { error } = await supabase.from('messages').insert({
       id: msgId,
       contact_phone: contactPhone,   // ← the customer's phone (recipient)
       contact_name: null,             // will be filled when they reply / from dashboard
-      body: `[${tempName}] ${data?.join(' | ') || ''}`,
-      direction: 'sent',
-      status: 'sent',
-      timestamp: Date.now(),
-    })
-
-    if (error) console.error('Supabase insert error:', error.message)
-
-    res.json({ success: true, id: msgId })
-
-  } catch (e) {
-    console.error('Send error:', e.message)
-    res.status(500).json({ error: e.message })
-  }
-})
-
-// ── POST: Send a free-form text message (from dashboard) ─────────────────────
-app.post('/send-text', async (req, res) => {
-  const { to, body: textBody } = req.body
-
-  if (!to || !textBody) {
-    return res.status(400).json({ error: 'Missing "to" or "body"' })
-  }
-
-  try {
-    const metaRes = await fetch(
-      `https://graph.facebook.com/v21.0/${process.env.WA_PHONE_NUMBER_ID}/messages`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.WA_ACCESS_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          recipient_type: 'individual',
-          to: to.replace('+', ''),
-          type: 'text',
-          text: { body: textBody }
-        }),
-      }
-    )
-
-    const metaData = await metaRes.json()
-
-    if (!metaRes.ok) {
-      console.error('Meta API error:', metaData)
-      return res.status(500).json({ error: metaData })
-    }
-
-    const msgId = metaData.messages?.[0]?.id
-    let contactPhone = to.startsWith('+') ? to : '+' + to
-
-    const { error } = await supabase.from('messages').insert({
-      id: msgId,
-      contact_phone: contactPhone,
-      contact_name: null,
-      body: textBody,
+      body: renderedBody,
       direction: 'sent',
       status: 'sent',
       timestamp: Date.now(),

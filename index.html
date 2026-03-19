@@ -876,12 +876,21 @@
       document.getElementById('realtimeLabel').textContent = live ? 'Realtime: live' : 'Realtime: off';
     }
 
-    // ── SEND MESSAGE (free-form text via Meta API directly) ────────────────────
+    // ── SEND MESSAGE ─────────────────────────────────────────────────────────
     async function sendMessage() {
       if (!activePhone) return;
       const ta = document.getElementById('msgInput');
       const body = ta.value.trim();
       if (!body) return;
+
+      // Check 24h window before sending
+      const chat = chats[activePhone];
+      const lastReceived = [...(chat?.messages || [])].reverse().find(m => m.direction === 'received');
+      const windowMs = 24 * 60 * 60 * 1000;
+      if (!lastReceived || (Date.now() - lastReceived.timestamp) > windowMs) {
+        showWindowExpired();
+        return;
+      }
 
       const tmpId = 'tmp_' + Date.now();
       const phone = activePhone;
@@ -913,7 +922,6 @@
         if (data.messages?.[0]?.id) {
           const realId = data.messages[0].id;
 
-          // Save to Supabase with contact_phone = the recipient
           await supabaseClient.from('messages').upsert({
             id: realId,
             contact_phone: phone,
@@ -924,13 +932,26 @@
             timestamp: Date.now()
           }, { onConflict: 'id' });
 
-          // Update local temp message
           const m = chats[phone].messages.find(m => m.id === tmpId);
           if (m) { m.id = realId; m.status = 'sent'; }
+
         } else {
-          const m = chats[phone].messages.find(m => m.id === tmpId);
-          if (m) m.status = 'failed';
-          toast('Send failed: ' + (data.error?.message || 'Unknown'), 'error');
+          // If Meta still rejects (e.g. window just expired), handle it
+          const errMsg = data.error?.message || '';
+          const errCode = data.error?.code;
+          const errSubCode = data.error?.error_subcode;
+          const isWindowError = errCode === 131047 || errSubCode === 131047
+            || errMsg.toLowerCase().includes('re-engagement')
+            || errMsg.toLowerCase().includes('24');
+
+          const idx = chats[phone].messages.findIndex(m => m.id === tmpId);
+          if (idx !== -1) chats[phone].messages.splice(idx, 1);
+
+          if (isWindowError) {
+            showWindowExpired();
+          } else {
+            toast('Send failed: ' + (errMsg || 'Unknown error'), 'error');
+          }
         }
       } catch (err) {
         console.error('Network Error:', err);
@@ -942,6 +963,30 @@
       renderMessages(phone);
       renderChatList();
       updateStats();
+    }
+
+    // ── 24h WINDOW EXPIRED BANNER ─────────────────────────────────────────────
+    function showWindowExpired() {
+      toast('24-Hour Window Expired — cannot send messages', 'error');
+      // Show inline banner above the input
+      const existing = document.getElementById('windowBanner');
+      if (existing) return; // already showing
+      const inputArea = document.querySelector('.msg-input-area');
+      if (!inputArea) return;
+      const banner = document.createElement('div');
+      banner.id = 'windowBanner';
+      banner.innerHTML = `
+        <div style="background:rgba(239,68,68,0.1);border:1px solid var(--red);border-radius:8px;
+          padding:10px 14px;margin:0 14px 8px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">⏰</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--red);">24-Hour Window Expired</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+              The customer hasn't messaged in 24 hours. You can only reply after they send a new message.
+            </div>
+          </div>
+        </div>`;
+      inputArea.parentNode.insertBefore(banner, inputArea);
     }
 
     // ── RENDER CHAT LIST ───────────────────────────────────────────────────────
@@ -1017,6 +1062,13 @@
       <button class="btn-send" onclick="sendMessage()">➤</button>
     </div>`;
       renderMessages(phone);
+
+      // Proactively check if 24h window is expired
+      const lastReceived = [...(chat.messages || [])].reverse().find(m => m.direction === 'received');
+      const windowMs = 24 * 60 * 60 * 1000;
+      if (!lastReceived || (Date.now() - lastReceived.timestamp) > windowMs) {
+        showWindowExpired();
+      }
     }
 
     // ── RENDER MESSAGES ────────────────────────────────────────────────────────
