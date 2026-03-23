@@ -26,9 +26,9 @@ def send_whatsapp_template(to: str, temp_name: str, data: list[str]):
 
 # Single message
 send_whatsapp_template(
-    to="201122267427",
-    temp_name="koraiem_attendace_absent_template",
-    data=["أحمد قباري","الاول","22","السبت","⬅️الكود: 22669885⬅️الباسورد: 02569885"]
+    to="201114634917",
+    temp_name="koraiem_arabic_std_code_template",
+    data=["أحمد قباري","الاول","22","السبت","⬅️الكود: 22669885⬅️الباسورد: 02569885","📱 لو معاك أندرويد: https://play.google.com/store/apps/details?id=com.codenredstech.koraiem_platform","📱 لو معاك آيفون: https://apps.apple.com/us/app/%D8%A8-%D8%A7%D9%84-%D8%B9-%D8%B1-%D8%A8-%D9%8A/id6737401826","https://wa.me/+201108352873",]
 )
 
 # # Bulk messages

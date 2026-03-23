@@ -39,7 +39,11 @@
       --recv-bg: #1c2030;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       background: var(--bg);
@@ -84,10 +88,20 @@
       font-size: 22px;
     }
 
-    .login-logo h1 { font-size: 22px; font-weight: 800; }
-    .login-logo span { color: var(--muted); font-size: 13px; display: block; }
+    .login-logo h1 {
+      font-size: 22px;
+      font-weight: 800;
+    }
 
-    .field { margin-bottom: 14px; }
+    .login-logo span {
+      color: var(--muted);
+      font-size: 13px;
+      display: block;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
 
     .field label {
       display: block;
@@ -111,7 +125,9 @@
       transition: border-color 0.2s;
     }
 
-    .field input:focus { border-color: var(--green); }
+    .field input:focus {
+      border-color: var(--green);
+    }
 
     .btn-login {
       width: 100%;
@@ -128,7 +144,9 @@
       transition: opacity 0.2s;
     }
 
-    .btn-login:hover { opacity: 0.88; }
+    .btn-login:hover {
+      opacity: 0.88;
+    }
 
     .section-divider {
       font-size: 11px;
@@ -156,7 +174,11 @@
       flex-shrink: 0;
     }
 
-    .topbar h1 { font-size: 17px; font-weight: 800; flex: 1; }
+    .topbar h1 {
+      font-size: 17px;
+      font-weight: 800;
+      flex: 1;
+    }
 
     .meta-tag {
       background: var(--green-dim);
@@ -190,7 +212,10 @@
       animation: pulse 2s infinite;
     }
 
-    @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
+    @keyframes pulse {
+      0%, 100% { opacity: 1 }
+      50% { opacity: 0.4 }
+    }
 
     .btn-topbar {
       background: none;
@@ -203,7 +228,11 @@
       font-family: 'Syne', sans-serif;
     }
 
-    .workspace { display: flex; flex: 1; overflow: hidden; }
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
 
     /* SIDEBAR */
     .sidebar {
@@ -235,7 +264,9 @@
       outline: none;
     }
 
-    .search-input:focus { border-color: var(--green); }
+    .search-input:focus {
+      border-color: var(--green);
+    }
 
     .filter-bar {
       display: flex;
@@ -275,7 +306,9 @@
       font-family: 'IBM Plex Mono', monospace;
     }
 
-    .stat b { color: var(--text); }
+    .stat b {
+      color: var(--text);
+    }
 
     .btn-new-chat {
       margin: 10px 14px;
@@ -290,11 +323,23 @@
       transition: all 0.2s;
     }
 
-    .btn-new-chat:hover { border-color: var(--green); color: var(--green); }
+    .btn-new-chat:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
 
-    .chat-list { flex: 1; overflow-y: auto; }
-    .chat-list::-webkit-scrollbar { width: 3px; }
-    .chat-list::-webkit-scrollbar-thumb { background: var(--border); }
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .chat-list::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .chat-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+    }
 
     .chat-item {
       padding: 11px 14px;
@@ -306,7 +351,9 @@
       transition: background 0.15s;
     }
 
-    .chat-item:hover { background: var(--surface2); }
+    .chat-item:hover {
+      background: var(--surface2);
+    }
 
     .chat-item.active {
       background: var(--surface2);
@@ -328,7 +375,10 @@
       flex-shrink: 0;
     }
 
-    .chat-info { flex: 1; min-width: 0; }
+    .chat-info {
+      flex: 1;
+      min-width: 0;
+    }
 
     .chat-name {
       font-size: 13px;
@@ -391,8 +441,16 @@
       gap: 12px;
     }
 
-    .chat-header .name { font-size: 14px; font-weight: 700; }
-    .chat-header .phone { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+    .chat-header .name {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .chat-header .phone {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
 
     .msg-list {
       flex: 1;
@@ -404,12 +462,27 @@
       background: var(--bg);
     }
 
-    .msg-list::-webkit-scrollbar { width: 3px; }
-    .msg-list::-webkit-scrollbar-thumb { background: var(--border); }
+    .msg-list::-webkit-scrollbar {
+      width: 3px;
+    }
 
-    .msg { display: flex; flex-direction: column; max-width: 65%; }
-    .msg.sent { align-self: flex-end; }
-    .msg.received { align-self: flex-start; }
+    .msg-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+    }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 65%;
+    }
+
+    .msg.sent {
+      align-self: flex-end;
+    }
+
+    .msg.received {
+      align-self: flex-start;
+    }
 
     .msg-bubble {
       padding: 8px 13px;
@@ -477,7 +550,9 @@
       line-height: 1.5;
     }
 
-    .msg-textarea:focus { border-color: var(--green); }
+    .msg-textarea:focus {
+      border-color: var(--green);
+    }
 
     .btn-send {
       background: var(--green);
@@ -495,7 +570,9 @@
       transition: opacity 0.2s;
     }
 
-    .btn-send:hover { opacity: 0.85; }
+    .btn-send:hover {
+      opacity: 0.85;
+    }
 
     .empty-state {
       flex: 1;
@@ -508,9 +585,11 @@
       background: var(--bg);
     }
 
-    .empty-state .icon { font-size: 44px; opacity: 0.25; }
+    .empty-state .icon {
+      font-size: 44px;
+      opacity: 0.25;
+    }
 
-    /* DATE SEPARATOR */
     .date-sep {
       text-align: center;
       font-size: 11px;
@@ -537,7 +616,9 @@
       justify-content: center;
     }
 
-    .modal-overlay.open { display: flex; }
+    .modal-overlay.open {
+      display: flex;
+    }
 
     .modal {
       background: var(--surface);
@@ -547,9 +628,17 @@
       width: 370px;
     }
 
-    .modal h3 { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
+    .modal h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
 
-    .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
 
     .btn-cancel {
       flex: 1;
@@ -597,6 +686,29 @@
     #toast.show { opacity: 1; transform: translateY(0); }
     #toast.success { border-color: var(--green); }
     #toast.error { border-color: var(--red); }
+
+    /* LOADING */
+    .load-more-indicator {
+      text-align: center;
+      padding: 12px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 
@@ -612,16 +724,19 @@
         </div>
       </div>
 
-      <div class="section-divider">META API CONFIG</div>
+      <div class="section-divider">LOGIN</div>
       <div class="field">
-        <label>PHONE NUMBER ID</label>
-        <input type="text" id="cfgPhoneId" placeholder="123456789012345">
+        <label>PHONE NUMBER</label>
+        <input type="text" id="loginPhone" placeholder="+13505005721">
       </div>
       <div class="field">
-        <label>ACCESS TOKEN</label>
-        <input type="password" id="cfgToken" placeholder="EAAxxxx...">
+        <label>PASSWORD</label>
+        <input type="password" id="loginPassword" placeholder="Enter password">
       </div>
-
+      <div id="loginError"
+        style="display:none;background:#2a1a1a;border:1px solid var(--red);color:var(--red);padding:10px 14px;border-radius:8px;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-bottom:12px;">
+        ⚠ Invalid phone number or password.
+      </div>
       <div id="supabaseLoadError"
         style="display:none;background:#2a1a1a;border:1px solid var(--red);color:var(--red);padding:10px 14px;border-radius:8px;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-bottom:12px;">
         ⚠ Supabase library failed to load. Check your internet connection and reload.
@@ -646,20 +761,22 @@
     <div class="workspace">
       <div class="sidebar">
         <div class="sidebar-top">
-          <input type="text" class="search-input" placeholder="🔍  Search..." oninput="filterChats(this.value)">
+          <input type="text" class="search-input" placeholder="🔍  Search..." oninput="debouncedSearch(this.value)">
         </div>
         <div class="filter-bar">
           <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
           <button class="filter-btn" data-filter="unread" onclick="setFilter('unread', this)">Unread</button>
         </div>
         <div class="stats-bar">
-          <div class="stat">Chats <b id="statChats">0</b></div>
-          <div class="stat">Sent <b id="statSent">0</b></div>
-          <div class="stat">Recv <b id="statRecv">0</b></div>
+          <div class="stat">Chats <b id="statChats">…</b></div>
+          <div class="stat">Sent <b id="statSent">…</b></div>
+          <div class="stat">Recv <b id="statRecv">…</b></div>
           <div class="stat">Unread <b id="statUnread">0</b></div>
         </div>
         <button class="btn-new-chat" onclick="openNewChatModal()">＋ New Conversation</button>
-        <div class="chat-list" id="chatList"></div>
+        <div class="chat-list" id="chatList">
+          <div class="load-more-indicator"><span class="spinner"></span> Loading chats...</div>
+        </div>
       </div>
 
       <div class="chat-area" id="chatArea">
@@ -693,32 +810,83 @@
   <div id="toast"></div>
 
   <script>
+    // ════════════════════════════════════════════════════════════════════════════
+    // OPTIMIZED ARCHITECTURE FOR 12K+ MESSAGES / 10K+ CUSTOMERS
+    //
+    //  OLD: load ALL 12K messages → group into 10K chats → render ALL
+    //  NEW:
+    //   1) Initial load: 1 query to get chat summaries (latest msg per contact)
+    //      — paginated, 50 chats at a time via cursor-based pagination
+    //   2) Chat list: rendered in pages of 50, infinite scroll appends more
+    //   3) Messages: lazy-loaded ONLY for the open chat, 50 at a time
+    //      — scroll up to load older messages (cursor-based)
+    //   4) Stats: efficient COUNT queries to DB, not in-memory loops
+    //   5) Search: debounced 300ms, server-side ilike filter
+    //   6) Realtime: lightweight — updates only the affected chat summary
+    //      and appends to active messages if the chat is open
+    //   7) Memory: only ~50 chat summaries + ~50 messages in RAM at any time
+    // ════════════════════════════════════════════════════════════════════════════
+
     // ── STATE ──────────────────────────────────────────────────────────────────
     let supabaseClient = null;
     let config = {};
-    let chats = {};        // keyed by contact_phone: { name, phone, messages:[], unread:0 }
+
+    // Chat summaries — lightweight objects, NO messages array
+    // Sorted array of { name, phone, lastBody, lastDirection, lastTimestamp, lastStatus, unread }
+    let chatSummaries = [];
+    let chatMap = {};  // phone → index into chatSummaries for O(1) lookup
+
+    // Chat list pagination (cursor-based)
+    let chatCursor = null;       // timestamp of last loaded chat's latest msg
+    let chatListHasMore = true;
+    let chatListLoading = false;
+    const CHATS_PAGE = 50;
+
+    // Active chat state — messages only for the OPEN chat
     let activePhone = null;
+    let activeMessages = [];
+    let activeHasMore = true;
+    let activeLoadingMore = false;
+    let activeTotalCount = 0;
+    const MSGS_PAGE = 50;
+
     let realtimeChannel = null;
     let currentFilter = 'all';
     let searchQuery = '';
 
+    // Stats
+    let globalStats = { chats: 0, sent: 0, recv: 0, unread: 0 };
+
+    // ── CREDENTIALS ───────────────────────────────────────────────────────────
+    const VALID_PHONE = '+13505005721';
+    const VALID_PASSWORD = 'Gh844Acb5921';
+    const HARDCODED_PHONE_ID = '1057331837443942';
+    const HARDCODED_ACCESS_TOKEN = 'EAAWytxOTAecBQCx79epjNwizTC8SrvhAWlc2GrjTMX3lUdFzZANxSKVK9IZCd9i9i2NFfwmMmUYrOMr6ShWZCPK8OQNfOdO1XbQWWZCk8iyb3iZAmuUEZAxZCZCwCxRt7n1sUY3Rjdn62GFEOgtO7WMb6STVV5eagZCFceqiHYaLhmYvKIKq8mVk74TROGoHJUjoHOwZDZD';
+
     // ── LOGIN ──────────────────────────────────────────────────────────────────
     function login() {
-      const supabaseUrl = SUPABASE_URL;
-      const supabaseKey = SUPABASE_KEY;
-      const phoneId = document.getElementById('cfgPhoneId').value.trim();
-      const token = document.getElementById('cfgToken').value.trim();
-
-      if (!phoneId || !token) return toast('Fill in all Meta API fields', 'error');
-
-      config = { supabaseUrl, supabaseKey, phoneId, token };
+      const phone = document.getElementById('loginPhone').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const errorEl = document.getElementById('loginError');
+      if (!phone || !password) return toast('Fill in all fields', 'error');
+      if (phone !== VALID_PHONE || password !== VALID_PASSWORD) {
+        errorEl.style.display = 'block';
+        return;
+      }
+      errorEl.style.display = 'none';
+      config = { supabaseUrl: SUPABASE_URL, supabaseKey: SUPABASE_KEY, phoneId: HARDCODED_PHONE_ID, token: HARDCODED_ACCESS_TOKEN };
       localStorage.setItem('waCfg', JSON.stringify(config));
       initApp();
     }
 
     function logout() {
       if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
-      config = {}; chats = {}; activePhone = null; supabaseClient = null;
+      localStorage.removeItem('waCfg');
+      config = {}; chatSummaries = []; chatMap = {};
+      activePhone = null; activeMessages = []; supabaseClient = null;
+      document.getElementById('loginPhone').value = '';
+      document.getElementById('loginPassword').value = '';
+      document.getElementById('loginError').style.display = 'none';
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('mainApp').style.display = 'none';
     }
@@ -726,12 +894,7 @@
     // ── INIT ───────────────────────────────────────────────────────────────────
     window.onload = () => {
       const saved = localStorage.getItem('waCfg');
-      if (saved) {
-        config = JSON.parse(saved);
-        document.getElementById('cfgPhoneId').value = config.phoneId || '';
-        document.getElementById('cfgToken').value = config.token || '';
-        initApp();
-      }
+      if (saved) { config = JSON.parse(saved); initApp(); }
     };
 
     async function initApp() {
@@ -742,14 +905,14 @@
         const _sLib = window.supabase && window.supabase.createClient
           ? window.supabase
           : (typeof supabaseJs !== 'undefined' ? supabaseJs : null);
-
         if (!_sLib) throw new Error('Supabase library failed to load.');
 
         supabaseClient = _sLib.createClient(config.supabaseUrl || SUPABASE_URL, config.supabaseKey || SUPABASE_KEY);
 
-        await loadAllMessages();
+        // Load first page of chats + stats in parallel
+        await Promise.all([loadChatPage(true), loadStats()]);
         subscribeRealtime();
-
+        setupChatListScroll();
       } catch (e) {
         console.error('Init error:', e);
         toast('Error: ' + e.message, 'error');
@@ -758,75 +921,177 @@
       }
     }
 
-    // ── LOAD FROM SUPABASE ─────────────────────────────────────────────────────
-    async function loadAllMessages() {
-      const { data, error } = await supabaseClient
-        .from('messages')
-        .select('*')
-        .order('timestamp', { ascending: true });
-
-      if (error) return toast('DB load error: ' + error.message, 'error');
-
-      chats = {};
-      for (const msg of data) {
-        addMessageToChats(msg);
-      }
-
-      renderChatList();
-      updateStats();
-    }
+    // ════════════════════════════════════════════════════════════════════════════
+    // DATA LAYER
+    // ════════════════════════════════════════════════════════════════════════════
 
     /**
-     * Core logic: group every message under the CONTACT's phone number.
-     * - Received messages: contact is msg.contact_phone (the sender)
-     * - Sent messages:     contact is msg.contact_phone (the recipient)
+     * Load one page of chat summaries.
+     * Strategy: fetch the N most recent messages, group by contact_phone,
+     * keeping only the latest per contact. This gives us chat summaries
+     * sorted by recency without needing a DB view or RPC.
      *
-     * Fallback for old DB rows that still use from_phone / to_phone:
-     *   sent    → use to_phone as contact
-     *   received→ use from_phone as contact
+     * We fetch in chunks and deduplicate client-side. To get 50 unique chats,
+     * we may need to fetch more rows since multiple msgs share the same contact.
      */
-    function getContactPhone(msg) {
-      if (msg.contact_phone) return msg.contact_phone;
-      // Fallback for legacy schema
-      if (msg.direction === 'sent') return msg.to_phone || msg.from_phone;
-      return msg.from_phone;
+    async function loadChatPage(reset = false) {
+      if (chatListLoading) return;
+      if (!reset && !chatListHasMore) return;
+      chatListLoading = true;
+
+      if (reset) {
+        chatSummaries = [];
+        chatMap = {};
+        chatCursor = null;
+        chatListHasMore = true;
+      }
+
+      const needed = CHATS_PAGE;
+      let found = 0;
+      let cursor = chatCursor;
+      const seenPhones = new Set(Object.keys(chatMap));
+
+      // Fetch in chunks until we have enough unique new chats or run out
+      while (found < needed) {
+        const chunkSize = Math.min((needed - found) * 5, 1000); // estimate 5 msgs per chat avg
+
+        let query = supabaseClient
+          .from('messages')
+          .select('contact_phone, contact_name, body, direction, status, timestamp')
+          .order('timestamp', { ascending: false })
+          .limit(chunkSize);
+
+        if (cursor) {
+          query = query.lt('timestamp', cursor);
+        }
+
+        // Server-side search filter
+        if (searchQuery) {
+          const q = `%${searchQuery}%`;
+          query = query.or(`contact_phone.ilike.${q},contact_name.ilike.${q}`);
+        }
+
+        const { data, error } = await query;
+        if (error) { toast('Load error: ' + error.message, 'error'); break; }
+        if (!data.length) { chatListHasMore = false; break; }
+
+        for (const row of data) {
+          const phone = row.contact_phone;
+          if (!phone || seenPhones.has(phone)) continue;
+
+          seenPhones.add(phone);
+          found++;
+
+          const summary = {
+            name: row.contact_name || phone,
+            phone,
+            lastBody: row.body,
+            lastDirection: row.direction,
+            lastTimestamp: row.timestamp,
+            lastStatus: row.status,
+            unread: 0
+          };
+
+          chatMap[phone] = chatSummaries.length;
+          chatSummaries.push(summary);
+        }
+
+        // Move cursor to oldest timestamp in this chunk
+        cursor = data[data.length - 1].timestamp;
+
+        // If chunk was smaller than requested, we've exhausted the table
+        if (data.length < chunkSize) { chatListHasMore = false; break; }
+      }
+
+      chatCursor = cursor;
+      chatListLoading = false;
+      renderChatList();
     }
 
-    function addMessageToChats(msg) {
-      const phone = getContactPhone(msg);
-      if (!phone) return; // skip broken rows
+    // ── STATS (DB counts) ──────────────────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const [sentRes, recvRes] = await Promise.all([
+          supabaseClient.from('messages').select('id', { count: 'exact', head: true }).eq('direction', 'sent'),
+          supabaseClient.from('messages').select('id', { count: 'exact', head: true }).eq('direction', 'received')
+        ]);
+        globalStats.sent = sentRes.count || 0;
+        globalStats.recv = recvRes.count || 0;
+        globalStats.chats = globalStats.sent + globalStats.recv > 0
+          ? chatSummaries.length  // will be updated as we load more
+          : 0;
+        updateStatsUI();
 
-      if (!chats[phone]) {
-        chats[phone] = {
-          name: msg.contact_name || msg.name || phone,
-          phone,
-          messages: [],
-          unread: 0
-        };
-      }
-
-      // Update contact name if we get a better one (from a received message)
-      const c = chats[phone];
-      const newName = msg.contact_name || msg.name;
-      if (newName && newName !== phone && c.name === phone) {
-        c.name = newName;
-      }
-
-      // Avoid duplicates
-      if (!c.messages.find(m => m.id === msg.id)) {
-        c.messages.push({
-          id: msg.id,
-          body: msg.body,
-          direction: msg.direction,
-          status: msg.status,
-          timestamp: msg.timestamp
-        });
-        // Sort by time
-        c.messages.sort((a, b) => a.timestamp - b.timestamp);
+        // Get distinct chat count asynchronously (heavier query)
+        const { data } = await supabaseClient.rpc('get_chat_count').maybeSingle();
+        // If RPC doesn't exist, fall back — this is fine
+        if (data?.count != null) {
+          globalStats.chats = data.count;
+          updateStatsUI();
+        }
+      } catch (e) {
+        // Fallback: just show what we have
+        globalStats.chats = chatSummaries.length;
+        updateStatsUI();
       }
     }
 
-    // ── SUPABASE REALTIME ──────────────────────────────────────────────────────
+    function updateStatsUI() {
+      document.getElementById('statChats').textContent = globalStats.chats || chatSummaries.length;
+      document.getElementById('statSent').textContent = globalStats.sent;
+      document.getElementById('statRecv').textContent = globalStats.recv;
+      document.getElementById('statUnread').textContent = globalStats.unread;
+    }
+
+    // ── LOAD MESSAGES FOR ACTIVE CHAT (paginated, newest-first) ───────────────
+    async function loadMessagesForChat(phone, older = false) {
+      if (activeLoadingMore) return;
+      activeLoadingMore = true;
+
+      try {
+        let query = supabaseClient
+          .from('messages')
+          .select('id, body, direction, status, timestamp')
+          .eq('contact_phone', phone)
+          .order('timestamp', { ascending: false })
+          .limit(MSGS_PAGE);
+
+        if (older && activeMessages.length > 0) {
+          query = query.lt('timestamp', activeMessages[0].timestamp);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        const msgs = data.reverse(); // chronological
+
+        if (older) {
+          activeMessages = [...msgs, ...activeMessages];
+        } else {
+          activeMessages = msgs;
+        }
+
+        activeHasMore = data.length === MSGS_PAGE;
+
+        // Get total count on first load
+        if (!older) {
+          const { count } = await supabaseClient
+            .from('messages')
+            .select('id', { count: 'exact', head: true })
+            .eq('contact_phone', phone);
+          activeTotalCount = count || 0;
+        }
+      } catch (e) {
+        console.error('loadMessages error:', e);
+        toast('Error loading messages', 'error');
+      }
+
+      activeLoadingMore = false;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // REALTIME
+    // ════════════════════════════════════════════════════════════════════════════
     function subscribeRealtime() {
       setRealtimeStatus(false);
 
@@ -836,32 +1101,76 @@
           { event: 'INSERT', schema: 'public', table: 'messages' },
           (payload) => {
             const msg = payload.new;
-            const phone = getContactPhone(msg);
+            const phone = msg.contact_phone;
+            if (!phone) return;
 
-            addMessageToChats(msg);
+            // Update or create chat summary
+            if (chatMap[phone] != null) {
+              const s = chatSummaries[chatMap[phone]];
+              if (msg.timestamp >= (s.lastTimestamp || 0)) {
+                s.lastBody = msg.body;
+                s.lastDirection = msg.direction;
+                s.lastTimestamp = msg.timestamp;
+                s.lastStatus = msg.status;
+                if (msg.contact_name && msg.contact_name !== phone) s.name = msg.contact_name;
+              }
+            } else {
+              const summary = {
+                name: msg.contact_name || phone, phone,
+                lastBody: msg.body, lastDirection: msg.direction,
+                lastTimestamp: msg.timestamp, lastStatus: msg.status,
+                unread: 0
+              };
+              chatMap[phone] = chatSummaries.length;
+              chatSummaries.push(summary);
+              globalStats.chats++;
+            }
 
-            // Notify if it's an incoming message and chat isn't active
+            // Stats
+            if (msg.direction === 'sent') globalStats.sent++;
+            else globalStats.recv++;
+
+            // Unread
             if (msg.direction === 'received' && activePhone !== phone) {
-              chats[phone].unread++;
-              toast(`📩 New message from ${chats[phone].name}`);
+              chatSummaries[chatMap[phone]].unread = (chatSummaries[chatMap[phone]].unread || 0) + 1;
+              globalStats.unread++;
+              toast(`📩 New message from ${chatSummaries[chatMap[phone]].name}`);
+            }
+
+            // Append to active chat if open
+            if (activePhone === phone) {
+              if (!activeMessages.find(m => m.id === msg.id)) {
+                activeMessages.push({
+                  id: msg.id, body: msg.body,
+                  direction: msg.direction, status: msg.status,
+                  timestamp: msg.timestamp
+                });
+                activeTotalCount++;
+                renderMessages(true);
+              }
             }
 
             renderChatList();
-            updateStats();
-            if (activePhone === phone) renderMessages(phone);
+            updateStatsUI();
           }
         )
         .on('postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'messages' },
           (payload) => {
             const updated = payload.new;
-            for (const phone of Object.keys(chats)) {
-              const m = chats[phone].messages.find(m => m.id === updated.id);
-              if (m) {
-                m.status = updated.status;
-                if (activePhone === phone) renderMessages(phone);
-                renderChatList(); // update tick in preview
-                break;
+            // Update active messages
+            if (activePhone) {
+              const m = activeMessages.find(m => m.id === updated.id);
+              if (m) { m.status = updated.status; renderMessages(false); }
+            }
+            // Update summary tick
+            const phone = updated.contact_phone;
+            if (phone && chatMap[phone] != null) {
+              const s = chatSummaries[chatMap[phone]];
+              // Only update if this is likely the latest msg
+              if (updated.body === s.lastBody) {
+                s.lastStatus = updated.status;
+                renderChatList();
               }
             }
           }
@@ -876,6 +1185,185 @@
       document.getElementById('realtimeLabel').textContent = live ? 'Realtime: live' : 'Realtime: off';
     }
 
+    // ════════════════════════════════════════════════════════════════════════════
+    // RENDERING
+    // ════════════════════════════════════════════════════════════════════════════
+
+    function renderChatList() {
+      const list = document.getElementById('chatList');
+
+      // Sort by latest timestamp descending
+      let sorted = [...chatSummaries].sort((a, b) => (b.lastTimestamp || 0) - (a.lastTimestamp || 0));
+
+      if (currentFilter === 'unread') {
+        sorted = sorted.filter(c => c.unread > 0);
+      }
+
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        sorted = sorted.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+      }
+
+      if (!sorted.length) {
+        list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">
+          ${chatListLoading ? '<span class="spinner"></span> Loading...'
+            : currentFilter === 'unread' ? 'No unread conversations'
+            : searchQuery ? 'No matches found'
+            : 'No conversations yet'}
+        </div>`;
+        return;
+      }
+
+      let html = sorted.map(chat => {
+        const preview = chat.lastBody
+          ? (chat.lastDirection === 'sent' ? '↑ ' : '↓ ') + chat.lastBody : '';
+        const time = chat.lastTimestamp ? formatTime(chat.lastTimestamp) : '';
+        const initials = getInitials(chat.name);
+        return `
+      <div class="chat-item ${activePhone === chat.phone ? 'active' : ''}" onclick="openChat('${esc(chat.phone)}')">
+        <div class="avatar">${initials}</div>
+        <div class="chat-info">
+          <div class="chat-name">${esc(chat.name)}</div>
+          <div class="chat-preview">${esc((preview || '').substring(0, 42))}</div>
+        </div>
+        <div class="chat-meta">
+          <div class="chat-time">${time}</div>
+          ${chat.unread ? `<div class="unread-badge">${chat.unread}</div>` : ''}
+        </div>
+      </div>`;
+      }).join('');
+
+      if (chatListHasMore) {
+        html += `<div class="load-more-indicator" id="chatSentinel">
+          <span class="spinner"></span> Loading more...
+        </div>`;
+      }
+
+      list.innerHTML = html;
+    }
+
+    function setupChatListScroll() {
+      const list = document.getElementById('chatList');
+      list.addEventListener('scroll', () => {
+        if (chatListLoading || !chatListHasMore) return;
+        const { scrollTop, scrollHeight, clientHeight } = list;
+        if (scrollHeight - scrollTop - clientHeight < 200) {
+          loadChatPage(false);
+        }
+      });
+    }
+
+    // ── OPEN CHAT ──────────────────────────────────────────────────────────────
+    async function openChat(phone) {
+      activePhone = phone;
+      activeMessages = [];
+      activeHasMore = true;
+      activeTotalCount = 0;
+
+      // Clear unread
+      if (chatMap[phone] != null) {
+        const s = chatSummaries[chatMap[phone]];
+        globalStats.unread -= (s.unread || 0);
+        if (globalStats.unread < 0) globalStats.unread = 0;
+        s.unread = 0;
+      }
+      renderChatList();
+      updateStatsUI();
+
+      const chat = chatMap[phone] != null ? chatSummaries[chatMap[phone]] : { name: phone, phone };
+      const initials = getInitials(chat.name);
+
+      document.getElementById('chatArea').innerHTML = `
+    <div class="chat-header">
+      <div class="avatar" style="width:34px;height:34px;font-size:13px;">${initials}</div>
+      <div>
+        <div class="name">${esc(chat.name)}</div>
+        <div class="phone">${chat.phone} · <span id="msgCountLabel">loading...</span></div>
+      </div>
+    </div>
+    <div class="msg-list" id="msgList">
+      <div class="load-more-indicator"><span class="spinner"></span> Loading messages...</div>
+    </div>
+    <div class="msg-input-area">
+      <textarea class="msg-textarea" id="msgInput" placeholder="Type a message..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"
+        oninput="this.style.height='40px';this.style.height=this.scrollHeight+'px'"></textarea>
+      <button class="btn-send" onclick="sendMessage()">➤</button>
+    </div>`;
+
+      await loadMessagesForChat(phone);
+
+      const cl = document.getElementById('msgCountLabel');
+      if (cl) cl.textContent = `${activeTotalCount} messages`;
+
+      renderMessages(true);
+      setupMessageScroll();
+
+      // 24h window check
+      const lastRecv = [...activeMessages].reverse().find(m => m.direction === 'received');
+      if (!lastRecv || (Date.now() - lastRecv.timestamp) > 86400000) {
+        showWindowExpired();
+      }
+    }
+
+    // ── RENDER MESSAGES ────────────────────────────────────────────────────────
+    function renderMessages(scrollToBottom) {
+      const list = document.getElementById('msgList');
+      if (!list) return;
+
+      const tickMap = { sending: '🕐', sent: '✓', delivered: '✓✓', read: '✓✓', failed: '✗' };
+
+      let html = '';
+      if (activeHasMore) {
+        html += `<div class="load-more-indicator" id="msgSentinel">
+          <span class="spinner"></span> Scroll up for older messages
+        </div>`;
+      }
+
+      let lastDateStr = '';
+      for (const msg of activeMessages) {
+        const dateStr = new Date(msg.timestamp).toDateString();
+        if (dateStr !== lastDateStr) {
+          lastDateStr = dateStr;
+          html += `<div class="date-sep"><span>${formatDateLabel(msg.timestamp)}</span></div>`;
+        }
+        const tick = tickMap[msg.status] || '';
+        const tickClass = msg.status === 'read' ? 'read' : msg.status === 'delivered' ? 'delivered'
+          : msg.status === 'failed' ? 'failed' : 'sent';
+        html += `
+      <div class="msg ${msg.direction}">
+        <div class="msg-bubble">${esc(msg.body)}</div>
+        <div class="msg-footer">
+          <span class="msg-time">${formatTime(msg.timestamp)}</span>
+          ${msg.direction === 'sent' ? `<span class="tick ${tickClass}">${tick}</span>` : ''}
+        </div>
+      </div>`;
+      }
+
+      const prevScrollHeight = list.scrollHeight;
+      const prevScrollTop = list.scrollTop;
+      list.innerHTML = html;
+
+      if (scrollToBottom) {
+        list.scrollTop = list.scrollHeight;
+      } else {
+        // Maintain position after prepending older messages
+        list.scrollTop = list.scrollHeight - prevScrollHeight + prevScrollTop;
+      }
+    }
+
+    function setupMessageScroll() {
+      const list = document.getElementById('msgList');
+      if (!list) return;
+      list.addEventListener('scroll', async () => {
+        if (!activeHasMore || activeLoadingMore) return;
+        if (list.scrollTop < 150) {
+          await loadMessagesForChat(activePhone, true);
+          renderMessages(false);
+        }
+      });
+    }
+
     // ── SEND MESSAGE ─────────────────────────────────────────────────────────
     async function sendMessage() {
       if (!activePhone) return;
@@ -883,94 +1371,79 @@
       const body = ta.value.trim();
       if (!body) return;
 
-      // Check 24h window before sending
-      const chat = chats[activePhone];
-      const lastReceived = [...(chat?.messages || [])].reverse().find(m => m.direction === 'received');
-      const windowMs = 24 * 60 * 60 * 1000;
-      if (!lastReceived || (Date.now() - lastReceived.timestamp) > windowMs) {
-        showWindowExpired();
-        return;
+      const lastRecv = [...activeMessages].reverse().find(m => m.direction === 'received');
+      if (!lastRecv || (Date.now() - lastRecv.timestamp) > 86400000) {
+        showWindowExpired(); return;
       }
 
       const tmpId = 'tmp_' + Date.now();
       const phone = activePhone;
       const msg = { id: tmpId, body, direction: 'sent', status: 'sending', timestamp: Date.now() };
+      activeMessages.push(msg);
+      ta.value = ''; ta.style.height = '40px';
+      renderMessages(true);
 
-      chats[phone].messages.push(msg);
-      ta.value = '';
-      ta.style.height = '40px';
-      renderMessages(phone);
+      // Update summary
+      if (chatMap[phone] != null) {
+        const s = chatSummaries[chatMap[phone]];
+        s.lastBody = body; s.lastDirection = 'sent';
+        s.lastTimestamp = msg.timestamp; s.lastStatus = 'sending';
+      }
       renderChatList();
 
       try {
         const res = await fetch(`https://graph.facebook.com/v21.0/${config.phoneId}/messages`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${config.token}`,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Authorization': `Bearer ${config.token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messaging_product: 'whatsapp',
-            recipient_type: 'individual',
-            to: phone.replace('+', ''),
-            type: 'text',
-            text: { body }
+            messaging_product: 'whatsapp', recipient_type: 'individual',
+            to: phone.replace('+', ''), type: 'text', text: { body }
           })
         });
         const data = await res.json();
 
         if (data.messages?.[0]?.id) {
           const realId = data.messages[0].id;
-
           await supabaseClient.from('messages').upsert({
-            id: realId,
-            contact_phone: phone,
-            contact_name: chats[phone].name !== phone ? chats[phone].name : null,
-            body,
-            direction: 'sent',
-            status: 'sent',
-            timestamp: Date.now()
+            id: realId, contact_phone: phone,
+            contact_name: chatMap[phone] != null && chatSummaries[chatMap[phone]].name !== phone
+              ? chatSummaries[chatMap[phone]].name : null,
+            body, direction: 'sent', status: 'sent', timestamp: Date.now()
           }, { onConflict: 'id' });
 
-          const m = chats[phone].messages.find(m => m.id === tmpId);
+          const m = activeMessages.find(m => m.id === tmpId);
           if (m) { m.id = realId; m.status = 'sent'; }
-
+          globalStats.sent++;
+          if (chatMap[phone] != null) chatSummaries[chatMap[phone]].lastStatus = 'sent';
         } else {
-          // If Meta still rejects (e.g. window just expired), handle it
           const errMsg = data.error?.message || '';
           const errCode = data.error?.code;
           const errSubCode = data.error?.error_subcode;
           const isWindowError = errCode === 131047 || errSubCode === 131047
             || errMsg.toLowerCase().includes('re-engagement')
             || errMsg.toLowerCase().includes('24');
-
-          const idx = chats[phone].messages.findIndex(m => m.id === tmpId);
-          if (idx !== -1) chats[phone].messages.splice(idx, 1);
-
-          if (isWindowError) {
-            showWindowExpired();
-          } else {
-            toast('Send failed: ' + (errMsg || 'Unknown error'), 'error');
-          }
+          const idx = activeMessages.findIndex(m => m.id === tmpId);
+          if (idx !== -1) activeMessages.splice(idx, 1);
+          if (isWindowError) showWindowExpired();
+          else toast('Send failed: ' + (errMsg || 'Unknown error'), 'error');
         }
       } catch (err) {
         console.error('Network Error:', err);
-        const m = chats[phone].messages.find(m => m.id === tmpId);
+        const m = activeMessages.find(m => m.id === tmpId);
         if (m) m.status = 'failed';
         toast('Network error', 'error');
       }
 
-      renderMessages(phone);
+      renderMessages(true);
       renderChatList();
-      updateStats();
+      updateStatsUI();
     }
 
-    // ── 24h WINDOW EXPIRED BANNER ─────────────────────────────────────────────
+    // ── 24h WINDOW EXPIRED ────────────────────────────────────────────────────
     function showWindowExpired() {
       toast('24-Hour Window Expired — cannot send messages', 'error');
-      // Show inline banner above the input
       const existing = document.getElementById('windowBanner');
-      if (existing) return; // already showing
+      if (existing) return;
       const inputArea = document.querySelector('.msg-input-area');
       if (!inputArea) return;
       const banner = document.createElement('div');
@@ -989,129 +1462,6 @@
       inputArea.parentNode.insertBefore(banner, inputArea);
     }
 
-    // ── RENDER CHAT LIST ───────────────────────────────────────────────────────
-    function renderChatList() {
-      const list = document.getElementById('chatList');
-      let sorted = Object.values(chats).sort((a, b) => {
-        return (b.messages.at(-1)?.timestamp || 0) - (a.messages.at(-1)?.timestamp || 0);
-      });
-
-      // Apply filter
-      if (currentFilter === 'unread') {
-        sorted = sorted.filter(c => c.unread > 0);
-      }
-
-      // Apply search
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        sorted = sorted.filter(c =>
-          c.name.toLowerCase().includes(q) || c.phone.includes(q)
-        );
-      }
-
-      if (!sorted.length) {
-        list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">
-          ${currentFilter === 'unread' ? 'No unread conversations' : 'No conversations yet'}
-        </div>`;
-        return;
-      }
-
-      list.innerHTML = sorted.map(chat => {
-        const last = chat.messages.at(-1);
-        const preview = last ? (last.direction === 'sent' ? '↑ ' : '↓ ') + last.body : '';
-        const time = last ? formatTime(last.timestamp) : '';
-        const initials = getInitials(chat.name);
-        return `
-      <div class="chat-item ${activePhone === chat.phone ? 'active' : ''}" onclick="openChat('${esc(chat.phone)}')">
-        <div class="avatar">${initials}</div>
-        <div class="chat-info">
-          <div class="chat-name">${esc(chat.name)}</div>
-          <div class="chat-preview">${esc((preview || '').substring(0, 42))}</div>
-        </div>
-        <div class="chat-meta">
-          <div class="chat-time">${time}</div>
-          ${chat.unread ? `<div class="unread-badge">${chat.unread}</div>` : ''}
-        </div>
-      </div>`;
-      }).join('');
-    }
-
-    // ── OPEN CHAT ──────────────────────────────────────────────────────────────
-    function openChat(phone) {
-      activePhone = phone;
-      if (chats[phone]) chats[phone].unread = 0;
-      renderChatList();
-      updateStats();
-
-      const chat = chats[phone];
-      const initials = getInitials(chat.name);
-
-      document.getElementById('chatArea').innerHTML = `
-    <div class="chat-header">
-      <div class="avatar" style="width:34px;height:34px;font-size:13px;">${initials}</div>
-      <div>
-        <div class="name">${esc(chat.name)}</div>
-        <div class="phone">${chat.phone}</div>
-      </div>
-    </div>
-    <div class="msg-list" id="msgList"></div>
-    <div class="msg-input-area">
-      <textarea class="msg-textarea" id="msgInput" placeholder="Type a message..." rows="1"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"
-        oninput="this.style.height='40px';this.style.height=this.scrollHeight+'px'"></textarea>
-      <button class="btn-send" onclick="sendMessage()">➤</button>
-    </div>`;
-      renderMessages(phone);
-
-      // Proactively check if 24h window is expired
-      const lastReceived = [...(chat.messages || [])].reverse().find(m => m.direction === 'received');
-      const windowMs = 24 * 60 * 60 * 1000;
-      if (!lastReceived || (Date.now() - lastReceived.timestamp) > windowMs) {
-        showWindowExpired();
-      }
-    }
-
-    // ── RENDER MESSAGES ────────────────────────────────────────────────────────
-    function renderMessages(phone) {
-      const list = document.getElementById('msgList');
-      if (!list) return;
-      const msgs = chats[phone]?.messages || [];
-
-      const tickMap = {
-        sending: '🕐', sent: '✓', delivered: '✓✓', read: '✓✓', failed: '✗'
-      };
-
-      let html = '';
-      let lastDateStr = '';
-
-      for (const msg of msgs) {
-        // Date separator
-        const dateStr = new Date(msg.timestamp).toDateString();
-        if (dateStr !== lastDateStr) {
-          lastDateStr = dateStr;
-          html += `<div class="date-sep"><span>${formatDateLabel(msg.timestamp)}</span></div>`;
-        }
-
-        const tick = tickMap[msg.status] || '';
-        const tickClass = msg.status === 'read' ? 'read'
-          : msg.status === 'delivered' ? 'delivered'
-          : msg.status === 'failed' ? 'failed'
-          : 'sent';
-
-        html += `
-      <div class="msg ${msg.direction}">
-        <div class="msg-bubble">${esc(msg.body)}</div>
-        <div class="msg-footer">
-          <span class="msg-time">${formatTime(msg.timestamp)}</span>
-          ${msg.direction === 'sent' ? `<span class="tick ${tickClass}">${tick}</span>` : ''}
-        </div>
-      </div>`;
-      }
-
-      list.innerHTML = html;
-      list.scrollTop = list.scrollHeight;
-    }
-
     // ── NEW CHAT ───────────────────────────────────────────────────────────────
     function openNewChatModal() { document.getElementById('newChatModal').classList.add('open'); }
     function closeNewChatModal() { document.getElementById('newChatModal').classList.remove('open'); }
@@ -1121,17 +1471,27 @@
       const name = document.getElementById('newName').value.trim() || raw;
       const phone = normalizePhone(raw);
       if (!phone || phone === '+') return toast('Enter a valid phone number', 'error');
-      if (!chats[phone]) chats[phone] = { name, phone, messages: [], unread: 0 };
-      else if (name !== raw) chats[phone].name = name; // update name
+
+      if (chatMap[phone] == null) {
+        const summary = {
+          name, phone, lastBody: '', lastDirection: '',
+          lastTimestamp: Date.now(), lastStatus: '', unread: 0
+        };
+        chatMap[phone] = chatSummaries.length;
+        chatSummaries.push(summary);
+        globalStats.chats++;
+      } else if (name !== raw) {
+        chatSummaries[chatMap[phone]].name = name;
+      }
+
       closeNewChatModal();
       document.getElementById('newPhone').value = '';
       document.getElementById('newName').value = '';
-      renderChatList();
-      updateStats();
+      renderChatList(); updateStatsUI();
       openChat(phone);
     }
 
-    // ── FILTER ─────────────────────────────────────────────────────────────────
+    // ── FILTER & SEARCH ────────────────────────────────────────────────────────
     function setFilter(filter, btn) {
       currentFilter = filter;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1139,28 +1499,25 @@
       renderChatList();
     }
 
-    function filterChats(v) {
-      searchQuery = v;
-      renderChatList();
+    let searchTimeout = null;
+    function debouncedSearch(value) {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        searchQuery = value;
+        // For 2+ chars or clearing, reload from DB with filter
+        if (value.length >= 2 || value.length === 0) {
+          loadChatPage(true);
+        } else {
+          renderChatList(); // instant client-side filter for 1 char
+        }
+      }, 300);
     }
 
     // ── HELPERS ────────────────────────────────────────────────────────────────
-    function updateStats() {
-      const all = Object.values(chats);
-      document.getElementById('statChats').textContent = all.length;
-      document.getElementById('statSent').textContent = all.reduce((s, c) =>
-        s + c.messages.filter(m => m.direction === 'sent').length, 0);
-      document.getElementById('statRecv').textContent = all.reduce((s, c) =>
-        s + c.messages.filter(m => m.direction === 'received').length, 0);
-      document.getElementById('statUnread').textContent = all.reduce((s, c) =>
-        s + (c.unread || 0), 0);
-    }
-
     function normalizePhone(p) {
       let n = p.replace(/\D/g, '');
       if (n.startsWith('0')) n = '20' + n.substring(1);
-      if (!n) return '';
-      return '+' + n;
+      return n ? '+' + n : '';
     }
 
     function getInitials(name) {
@@ -1169,16 +1526,14 @@
     }
 
     function formatTime(ts) {
-      const d = new Date(ts);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
     function formatDateLabel(ts) {
       const d = new Date(ts), now = new Date();
       if (d.toDateString() === now.toDateString()) return 'Today';
-      const yesterday = new Date(now);
-      yesterday.setDate(yesterday.getDate() - 1);
-      if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+      const y = new Date(now); y.setDate(y.getDate() - 1);
+      if (d.toDateString() === y.toDateString()) return 'Yesterday';
       return d.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
     }
 
