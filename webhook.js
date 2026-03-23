@@ -10,7 +10,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// ── GET: Meta webhook verification ──────────────────────────
+// ── GET: Meta webhook verification ──────────────────────────────────────────
 app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode']
   const token = req.query['hub.verify_token']
@@ -20,19 +20,16 @@ app.get('/webhook', (req, res) => {
     console.log('✅ Webhook verified by Meta')
     return res.status(200).send(challenge)
   }
-
   console.log('❌ Verification failed — token mismatch')
   res.sendStatus(403)
 })
 
-// ── POST: Webhook (messages + statuses) ─────────────────────
+// ── POST: Incoming messages & status updates ─────────────────────────────────
 app.post('/webhook', async (req, res) => {
   res.sendStatus(200)
 
   try {
     const value = req.body.entry?.[0]?.changes?.[0]?.value
-
-    console.log('📥 FULL WEBHOOK:', JSON.stringify(req.body, null, 2))
 
     const ALLOWED_PHONE_ID = process.env.WA_PHONE_NUMBER_ID
     if (value?.metadata?.phone_number_id !== ALLOWED_PHONE_ID) {
@@ -43,40 +40,19 @@ app.post('/webhook', async (req, res) => {
     const messages = value?.messages
     const statuses = value?.statuses
 
-    // ── Handle statuses (DELIVERED / READ / FAILED) ──
+    // ── Handle delivery / read receipts ──
     if (statuses?.length) {
       for (const s of statuses) {
-        let updateData = {
-          status: s.status,
-          error: null
+        const updateData = { status: s.status }
+
+        // Capture error details from failed status updates
+        if (s.status === 'failed' && s.errors?.length) {
+          updateData.error = s.errors.map(e => e.title || e.message || JSON.stringify(e)).join('; ')
         }
 
+        // Meta sends recipient_id on status updates — use it to fill contact_phone
         if (s.recipient_id) {
           updateData.contact_phone = '+' + s.recipient_id
-        }
-
-        console.log('📦 STATUS UPDATE:', JSON.stringify(s, null, 2))
-
-        // 🔥 HANDLE FAILED
-        if (s.status === 'failed') {
-          console.log('❌ MESSAGE FAILED')
-          console.log('🆔 ID:', s.id)
-          console.log('📱 TO:', s.recipient_id)
-
-          if (s.errors?.length) {
-            s.errors.forEach((err, i) => {
-              console.log(`🚨 Error ${i + 1}`)
-              console.log('Code:', err.code)
-              console.log('Title:', err.title)
-              console.log('Message:', err.message)
-              console.log('Details:', err.error_data?.details)
-            })
-
-            // ✅ save error in DB
-            updateData.error = JSON.stringify(s.errors)
-          } else {
-            console.log('⚠️ No error details from Meta')
-          }
         }
 
         const { error } = await supabase
@@ -84,16 +60,16 @@ app.post('/webhook', async (req, res) => {
           .update(updateData)
           .eq('id', s.id)
 
-        if (error) console.error('❌ Supabase update error:', error.message)
-        else console.log(`📬 Updated ${s.id} → ${s.status}`)
+        if (error) console.error('Status update error:', error.message)
+        else console.log(`📬 Status updated → ${s.id}: ${s.status}`)
       }
     }
 
-    // ── Handle incoming messages ──
+    // ── Handle incoming text messages ──
     if (messages?.length) {
       for (const msg of messages) {
         if (msg.type !== 'text') {
-          console.log(`⚠️ Skip type: ${msg.type}`)
+          console.log(`⚠️  Skipping non-text message type: ${msg.type}`)
           continue
         }
 
@@ -101,7 +77,7 @@ app.post('/webhook', async (req, res) => {
         const contact = value.contacts?.find(c => c.wa_id === msg.from)
         const name = contact?.profile?.name || contactPhone
 
-        console.log(`📩 Incoming from ${name}: ${msg.text.body}`)
+        console.log(`📩 Incoming from ${name} (${contactPhone}): ${msg.text.body}`)
 
         const { error } = await supabase.from('messages').upsert({
           id: msg.id,
@@ -113,37 +89,32 @@ app.post('/webhook', async (req, res) => {
           timestamp: parseInt(msg.timestamp) * 1000,
         }, { onConflict: 'id' })
 
-        if (error) console.error('❌ Insert error:', error.message)
-        else console.log('✅ Saved message')
+        if (error) console.error('Insert error:', error.message)
+        else console.log(`✅ Saved to Supabase`)
       }
     }
 
   } catch (e) {
-    console.error('💥 Webhook crash:', e.message)
+    console.error('Webhook crash:', e.message)
   }
 })
 
-// ── Helper: render template ────────────────────────────────
+// ── Helper: fetch template text from Meta & render with parameters ───────────
 async function renderTemplate(tempName, data) {
   try {
     const url = `https://graph.facebook.com/v21.0/${process.env.WA_WABA_ID}/message_templates?name=${tempName}`
-
     const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${process.env.WA_ACCESS_TOKEN}`
-      }
+      headers: { 'Authorization': `Bearer ${process.env.WA_ACCESS_TOKEN}` }
     })
-
     const json = await res.json()
 
     const template = json.data?.[0]
-    if (!template) return `[${tempName}] ${data?.join(' | ')}`
+    if (!template) return `[${tempName}] ${data?.join(' | ') || ''}`
 
     const bodyComp = template.components?.find(c => c.type === 'BODY')
-    if (!bodyComp?.text) return `[${tempName}] ${data?.join(' | ')}`
+    if (!bodyComp?.text) return `[${tempName}] ${data?.join(' | ') || ''}`
 
     let rendered = bodyComp.text
-
     if (data?.length) {
       data.forEach((val, i) => {
         rendered = rendered.replace(`{{${i + 1}}}`, val)
@@ -151,27 +122,26 @@ async function renderTemplate(tempName, data) {
     }
 
     return rendered
-
   } catch (e) {
-    console.error('❌ Template fetch error:', e.message)
-    return `[${tempName}] ${data?.join(' | ')}`
+    console.error('Template fetch error:', e.message)
+    return `[${tempName}] ${data?.join(' | ') || ''}`
   }
 }
 
-// ── POST: Send template ────────────────────────────────────
+// ── POST: Send a template message ────────────────────────────────────────────
 app.post('/send', async (req, res) => {
   const { to, tempName, data } = req.body
 
-  try {
-    console.log('📤 SENDING REQUEST:')
-    console.log(JSON.stringify({ to, tempName, data }, null, 2))
+  // Normalize phone early so it's available in all branches
+  const contactPhone = to.startsWith('+') ? to : '+' + to
 
+  try {
     const metaRes = await fetch(
       `https://graph.facebook.com/v21.0/${process.env.WA_PHONE_NUMBER_ID}/messages`,
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${process.env.WA_ACCESS_TOKEN}`,
+          'Authorization': `Bearer ${process.env.WA_ACCESS_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -180,14 +150,11 @@ app.post('/send', async (req, res) => {
           type: 'template',
           template: {
             name: tempName,
-            language: { code: 'en' }, // ⚠️ غيرها لو template عربي
+            language: { code: 'en' },
             components: data?.length ? [
               {
                 type: 'body',
-                parameters: data.map(text => ({
-                  type: 'text',
-                  text
-                }))
+                parameters: data.map(text => ({ type: 'text', text }))
               }
             ] : []
           }
@@ -197,37 +164,63 @@ app.post('/send', async (req, res) => {
 
     const metaData = await metaRes.json()
 
-    console.log('📥 META RESPONSE:')
-    console.log(JSON.stringify(metaData, null, 2))
-
+    // ── Meta API returned an error ──
     if (!metaRes.ok) {
-      console.error('❌ META ERROR')
-      return res.status(500).json({ error: metaData })
+      console.error('Meta API error:', metaData)
+
+      const errorText = metaData.error?.message || JSON.stringify(metaData)
+      const renderedBody = await renderTemplate(tempName, data)
+
+      // Log the failed attempt to Supabase with error details
+      await supabase.from('messages').insert({
+        contact_phone: contactPhone,
+        body: renderedBody,
+        direction: 'sent',
+        status: 'failed',
+        error: errorText,
+        timestamp: Date.now(),
+      }).catch(err => console.error('Failed to log error to Supabase:', err.message))
+
+      return res.status(500).json({ success: false, error: errorText })
     }
 
+    // ── Success — save the sent message ──
     const msgId = metaData.messages?.[0]?.id
-    const contactPhone = to.startsWith('+') ? to : '+' + to
-
     const renderedBody = await renderTemplate(tempName, data)
 
     const { error } = await supabase.from('messages').insert({
       id: msgId,
       contact_phone: contactPhone,
+      contact_name: null,
       body: renderedBody,
       direction: 'sent',
       status: 'sent',
       timestamp: Date.now(),
     })
 
-    if (error) console.error('❌ Supabase insert error:', error.message)
+    if (error) {
+      console.error('Supabase insert error:', error.message)
+      return res.json({ success: true, id: msgId, warning: error.message })
+    }
 
     res.json({ success: true, id: msgId })
 
   } catch (e) {
-    console.error('💥 Send crash:', e.message)
-    res.status(500).json({ error: e.message })
+    console.error('Send error:', e.message)
+
+    // Log crash-level errors to Supabase too
+    await supabase.from('messages').insert({
+      contact_phone: contactPhone,
+      body: `[${tempName}] ${data?.join(' | ') || ''}`,
+      direction: 'sent',
+      status: 'failed',
+      error: e.message,
+      timestamp: Date.now(),
+    }).catch(err => console.error('Failed to log error to Supabase:', err.message))
+
+    res.status(500).json({ success: false, error: e.message })
   }
 })
 
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`))
+app.listen(PORT, () => console.log(`🚀 Webhook server running on port ${PORT}`))
