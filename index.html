@@ -213,8 +213,15 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1 }
-      50% { opacity: 0.4 }
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.4
+      }
     }
 
     .btn-topbar {
@@ -518,12 +525,29 @@
       font-family: 'IBM Plex Mono', monospace;
     }
 
-    .tick { font-size: 12px; }
-    .tick.sending { color: var(--muted); }
-    .tick.sent { color: var(--muted); }
-    .tick.delivered { color: var(--muted); }
-    .tick.read { color: var(--blue); }
-    .tick.failed { color: var(--red); }
+    .tick {
+      font-size: 12px;
+    }
+
+    .tick.sending {
+      color: var(--muted);
+    }
+
+    .tick.sent {
+      color: var(--muted);
+    }
+
+    .tick.delivered {
+      color: var(--muted);
+    }
+
+    .tick.read {
+      color: var(--blue);
+    }
+
+    .tick.failed {
+      color: var(--red);
+    }
 
     .msg-input-area {
       background: var(--surface);
@@ -683,9 +707,18 @@
       pointer-events: none;
     }
 
-    #toast.show { opacity: 1; transform: translateY(0); }
-    #toast.success { border-color: var(--green); }
-    #toast.error { border-color: var(--red); }
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #toast.success {
+      border-color: var(--green);
+    }
+
+    #toast.error {
+      border-color: var(--red);
+    }
 
     /* LOADING */
     .load-more-indicator {
@@ -708,7 +741,11 @@
       margin-right: 6px;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
@@ -865,8 +902,20 @@
       '+13505005721': {
         password: 'Gh844Acb5921',
         phoneNumberId: '1057331837443942',
-        accessToken: 'EAAWytxOTAecBQCx79epjNwizTC8SrvhAWlc2GrjTMX3lUdFzZANxSKVK9IZCd9i9i2NFfwmMmUYrOMr6ShWZCPK8OQNfOdO1XbQWWZCk8iyb3iZAmuUEZAxZCZCwCxRt7n1sUY3Rjdn62GFEOgtO7WMb6STVV5eagZCFceqiHYaLhmYvKIKq8mVk74TROGoHJUjoHOwZDZD',
-        label: 'CodeNerds Main',        // shown in topbar after login
+        accessToken: 'EAAXg6ik6ZAgABRE5CEjY77OWN6dfieagkNu9ZAhUkT24oehTz5IZBHxqW0CK11BrwWXvYCm4lnFifNyJ3uWoleX4VxsKDXj5kR2ZBM7jhBJxEM6LA68QNVgdKfaVJTWgaBGTaZCZBvqZC8aG4FSUYHnuylegJHevG64UJUqTwNNbiZC3rfsvdQSM7Yj1KOAkgi8fGQZDZD',
+        label: 'أستاذ/ كُريِّم - لغة عربية',        // shown in topbar after login
+      },
+      '+18633101388': {
+        password: 'Xm45l8s2909v5',
+        phoneNumberId: '1017485118118106',
+        accessToken: 'EAAXg6ik6ZAgABRE5CEjY77OWN6dfieagkNu9ZAhUkT24oehTz5IZBHxqW0CK11BrwWXvYCm4lnFifNyJ3uWoleX4VxsKDXj5kR2ZBM7jhBJxEM6LA68QNVgdKfaVJTWgaBGTaZCZBvqZC8aG4FSUYHnuylegJHevG64UJUqTwNNbiZC3rfsvdQSM7Yj1KOAkgi8fGQZDZD',
+        label: 'Lets Excel - Mohamed Yakout',        // shown in topbar after login
+      },
+      '+15557647394': {
+        password: 'Sp45l8s2909v5',
+        phoneNumberId: '847987438407450',
+        accessToken: 'EAAXg6ik6ZAgABRE5CEjY77OWN6dfieagkNu9ZAhUkT24oehTz5IZBHxqW0CK11BrwWXvYCm4lnFifNyJ3uWoleX4VxsKDXj5kR2ZBM7jhBJxEM6LA68QNVgdKfaVJTWgaBGTaZCZBvqZC8aG4FSUYHnuylegJHevG64UJUqTwNNbiZC3rfsvdQSM7Yj1KOAkgi8fGQZDZD',
+        label: 'SparkinPhysics',        // shown in topbar after login
       },
       // ── Add more accounts here ──
       // '+201234567890': {
@@ -1235,8 +1284,8 @@
         list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">
           ${chatListLoading ? '<span class="spinner"></span> Loading...'
             : currentFilter === 'unread' ? 'No unread conversations'
-            : searchQuery ? 'No matches found'
-            : 'No conversations yet'}
+              : searchQuery ? 'No matches found'
+                : 'No conversations yet'}
         </div>`;
         return;
       }

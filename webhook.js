@@ -17,11 +17,29 @@ const ALLOWED_PHONE_IDS = (process.env.WA_ALLOWED_PHONE_IDS || '')
   .map(id => id.trim())
   .filter(Boolean)
 
+// Log on startup so you can verify in Railway logs
+console.log('📋 ALLOWED_PHONE_IDS:', JSON.stringify(ALLOWED_PHONE_IDS))
+console.log('📋 Count:', ALLOWED_PHONE_IDS.length)
+
+// ── GET /debug — hit this in your browser to verify config ──────────────────
+app.get('/debug', (req, res) => {
+  res.json({
+    allowedPhoneIds: ALLOWED_PHONE_IDS,
+    count: ALLOWED_PHONE_IDS.length,
+    hasSupabaseUrl: !!process.env.SUPABASE_URL,
+    hasAccessToken: !!process.env.WA_ACCESS_TOKEN,
+    hasVerifyToken: !!process.env.WA_VERIFY_TOKEN,
+    envRaw: process.env.WA_ALLOWED_PHONE_IDS || '(not set)',
+  })
+})
+
 // ── GET: Meta webhook verification ──────────────────────────────────────────
 app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode']
   const token = req.query['hub.verify_token']
   const challenge = req.query['hub.challenge']
+
+  console.log('🔑 Webhook verify attempt — mode:', mode, 'token:', token)
 
   if (mode === 'subscribe' && token === process.env.WA_VERIFY_TOKEN) {
     console.log('✅ Webhook verified by Meta')
@@ -36,14 +54,38 @@ app.post('/webhook', async (req, res) => {
   res.sendStatus(200)
 
   try {
-    const value = req.body.entry?.[0]?.changes?.[0]?.value
+    // ── DEBUG: log raw entry so we can see exactly what Meta sends ──
+    const entry = req.body.entry?.[0]
+    const change = entry?.changes?.[0]
+    const value = change?.value
+
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📨 WEBHOOK HIT')
+    console.log('   entry.id:', entry?.id)
+    console.log('   field:', change?.field)
+    console.log('   phone_number_id:', value?.metadata?.phone_number_id)
+    console.log('   display_phone:', value?.metadata?.display_phone_number)
+    console.log('   has messages:', !!(value?.messages?.length))
+    console.log('   has statuses:', !!(value?.statuses?.length))
+    console.log('   whitelist:', JSON.stringify(ALLOWED_PHONE_IDS))
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     // Check against whitelist of allowed phone number IDs
     const incomingPhoneId = value?.metadata?.phone_number_id
-    if (!incomingPhoneId || !ALLOWED_PHONE_IDS.includes(incomingPhoneId)) {
-      console.log(`⚠️ Ignored — phone_number_id ${incomingPhoneId} not in whitelist`)
+    if (!incomingPhoneId) {
+      console.log('⚠️ BLOCKED — no phone_number_id in payload')
       return
     }
+    if (!ALLOWED_PHONE_IDS.includes(incomingPhoneId)) {
+      console.log(`⚠️ BLOCKED — "${incomingPhoneId}" NOT in [${ALLOWED_PHONE_IDS.join(', ')}]`)
+      console.log(`   typeof incomingPhoneId: ${typeof incomingPhoneId}`)
+      console.log(`   exact comparison with each:`)
+      ALLOWED_PHONE_IDS.forEach((id, i) => {
+        console.log(`     [${i}] "${id}" === "${incomingPhoneId}" → ${id === incomingPhoneId} (lengths: ${id.length} vs ${incomingPhoneId.length})`)
+      })
+      return
+    }
+    console.log(`✅ ALLOWED — phone_number_id ${incomingPhoneId}`)
 
     const messages = value?.messages
     const statuses = value?.statuses
@@ -99,7 +141,7 @@ app.post('/webhook', async (req, res) => {
         }, { onConflict: 'id' })
 
         if (error) console.error('Insert error:', error.message)
-        else console.log(`✅ Saved to Supabase`)
+        else console.log(`✅ Saved to Supabase (phone_number_id: ${incomingPhoneId})`)
       }
     }
 
@@ -143,6 +185,7 @@ app.post('/send', async (req, res) => {
 
   // Validate phoneNumberId against whitelist
   if (!phoneNumberId || !ALLOWED_PHONE_IDS.includes(phoneNumberId)) {
+    console.log(`⚠️ /send blocked — phoneNumberId "${phoneNumberId}" not in whitelist`)
     return res.status(400).json({ success: false, error: 'Invalid or missing phoneNumberId' })
   }
 
