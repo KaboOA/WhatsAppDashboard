@@ -10,21 +10,33 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// ── Whitelist of allowed phone number IDs ───────────────────────────────────
-// Comma-separated in env: WA_ALLOWED_PHONE_IDS=111111,222222,333333
-const ALLOWED_PHONE_IDS = (process.env.WA_ALLOWED_PHONE_IDS || '')
+// ── Whitelist of allowed phone number IDs & WABA mapping ────────────────────
+// Comma-separated mapping in env: WA_ALLOWED_PHONE_IDS=111:waba1,222:waba2
+const rawPhoneMapping = (process.env.WA_ALLOWED_PHONE_IDS || '')
   .split(',')
   .map(id => id.trim())
   .filter(Boolean)
 
+const ALLOWED_PHONE_IDS = []
+const PHONE_TO_WABA = {}
+
+rawPhoneMapping.forEach(pair => {
+  const [phoneId, wabaId] = pair.split(':').map(s => s.trim())
+  if (phoneId) {
+    ALLOWED_PHONE_IDS.push(phoneId)
+    PHONE_TO_WABA[phoneId] = wabaId || process.env.WA_WABA_ID
+  }
+})
+
 // Log on startup so you can verify in Railway logs
 console.log('📋 ALLOWED_PHONE_IDS:', JSON.stringify(ALLOWED_PHONE_IDS))
-console.log('📋 Count:', ALLOWED_PHONE_IDS.length)
+console.log('📋 PHONE_TO_WABA:', JSON.stringify(PHONE_TO_WABA))
 
 // ── GET /debug — hit this in your browser to verify config ──────────────────
 app.get('/debug', (req, res) => {
   res.json({
     allowedPhoneIds: ALLOWED_PHONE_IDS,
+    phoneToWaba: PHONE_TO_WABA,
     count: ALLOWED_PHONE_IDS.length,
     hasSupabaseUrl: !!process.env.SUPABASE_URL,
     hasAccessToken: !!process.env.WA_ACCESS_TOKEN,
@@ -151,9 +163,10 @@ app.post('/webhook', async (req, res) => {
 })
 
 // ── Helper: fetch template text from Meta & render with parameters ───────────
-async function renderTemplate(tempName, data) {
+async function renderTemplate(tempName, data, wabaId) {
   try {
-    const url = `https://graph.facebook.com/v21.0/${process.env.WA_WABA_ID}/message_templates?name=${tempName}`
+    if (!wabaId) throw new Error('wabaId is missing')
+    const url = `https://graph.facebook.com/v21.0/${wabaId}/message_templates?name=${tempName}`
     const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${process.env.WA_ACCESS_TOKEN}` }
     })
@@ -181,7 +194,11 @@ async function renderTemplate(tempName, data) {
 
 // ── POST: Send a template message ────────────────────────────────────────────
 app.post('/send', async (req, res) => {
-  const { to, tempName, data, phoneNumberId } = req.body
+  let { to, tempName, data, phoneNumberId } = req.body
+
+  if (!phoneNumberId) {
+    phoneNumberId = '1057331837443942'
+  }
 
   // Validate phoneNumberId against whitelist
   if (!phoneNumberId || !ALLOWED_PHONE_IDS.includes(phoneNumberId)) {
@@ -225,8 +242,9 @@ app.post('/send', async (req, res) => {
     if (!metaRes.ok) {
       console.error('Meta API error:', metaData)
 
+      const wabaId = PHONE_TO_WABA[phoneNumberId]
       const errorText = metaData.error?.message || JSON.stringify(metaData)
-      const renderedBody = await renderTemplate(tempName, data)
+      const renderedBody = await renderTemplate(tempName, data, wabaId)
 
       // Log the failed attempt to Supabase with error details
       await supabase.from('messages').insert({
@@ -243,8 +261,9 @@ app.post('/send', async (req, res) => {
     }
 
     // ── Success — save the sent message ──
+    const wabaId = PHONE_TO_WABA[phoneNumberId]
     const msgId = metaData.messages?.[0]?.id
-    const renderedBody = await renderTemplate(tempName, data)
+    const renderedBody = await renderTemplate(tempName, data, wabaId)
 
     const { error } = await supabase.from('messages').insert({
       id: msgId,

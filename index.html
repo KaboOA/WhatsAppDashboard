@@ -182,7 +182,7 @@
 
     .meta-tag {
       background: var(--green-dim);
-      color: var(--green);
+      color: var(--text);
       font-size: 11px;
       padding: 3px 10px;
       border-radius: 20px;
@@ -1097,7 +1097,9 @@
         updateStatsUI();
 
         // Get distinct chat count asynchronously (heavier query)
-        const { data } = await supabaseClient.rpc('get_chat_count').maybeSingle();
+        const { data } = await supabaseClient.rpc('get_chat_count', {
+          p_phone_number_id: config.phoneNumberId
+        }).maybeSingle();
         // If RPC doesn't exist, fall back — this is fine
         if (data?.count != null) {
           globalStats.chats = data.count;
