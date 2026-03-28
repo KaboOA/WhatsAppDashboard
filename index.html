@@ -50,6 +50,7 @@
       color: var(--text);
       font-family: 'Syne', sans-serif;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
     }
 
@@ -161,6 +162,7 @@
     #mainApp {
       display: none;
       height: 100vh;
+      height: 100dvh;
       flex-direction: column;
     }
 
@@ -556,6 +558,7 @@
       display: flex;
       gap: 10px;
       align-items: flex-end;
+      flex-shrink: 0;
     }
 
     .msg-textarea {
@@ -744,6 +747,40 @@
     @keyframes spin {
       to {
         transform: rotate(360deg);
+      }
+    }
+
+    .btn-back {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 20px;
+      margin-right: 12px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    /* RESPONSIVE MOBILE */
+    @media (max-width: 768px) {
+      .login-box { width: 90%; padding: 28px; }
+      
+      .sidebar { width: 100%; border-right: none; }
+      .chat-area { display: none; }
+      
+      body.chat-open .sidebar { display: none; }
+      body.chat-open .chat-area { display: flex; width: 100%; }
+      
+      .topbar { padding: 12px 14px; }
+      .topbar h1 { font-size: 15px; }
+      .meta-tag, .realtime-status #realtimeLabel { display: none; }
+      
+      .btn-back { display: block; }
+      .msg { max-width: 85%; }
+      
+      .msg-input-area {
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
       }
     }
   </style>
@@ -1333,6 +1370,8 @@
 
     // ── OPEN CHAT ──────────────────────────────────────────────────────────────
     async function openChat(phone) {
+      document.body.classList.add('chat-open');
+      
       activePhone = phone;
       activeMessages = [];
       activeHasMore = true;
@@ -1353,6 +1392,7 @@
 
       document.getElementById('chatArea').innerHTML = `
     <div class="chat-header">
+      <button class="btn-back" onclick="closeChat()">←</button>
       <div class="avatar" style="width:34px;height:34px;font-size:13px;">${initials}</div>
       <div>
         <div class="name">${esc(chat.name)}</div>
@@ -1592,6 +1632,18 @@
     }
 
     // ── HELPERS ────────────────────────────────────────────────────────────────
+    function closeChat() {
+      document.body.classList.remove('chat-open');
+      activePhone = null;
+      document.getElementById('chatArea').innerHTML = `
+        <div class="empty-state">
+          <div class="icon">💬</div>
+          <p>Select a conversation</p>
+        </div>
+      `;
+      renderChatList();
+    }
+
     function normalizePhone(p) {
       let n = p.replace(/\D/g, '');
       if (n.startsWith('0')) n = '20' + n.substring(1);

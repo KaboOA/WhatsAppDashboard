@@ -247,7 +247,7 @@ app.post('/send', async (req, res) => {
       const renderedBody = await renderTemplate(tempName, data, wabaId)
 
       // Log the failed attempt to Supabase with error details
-      await supabase.from('messages').insert({
+      const { error } = await supabase.from('messages').insert({
         phone_number_id: phoneNumberId,
         contact_phone: contactPhone,
         body: renderedBody,
@@ -255,8 +255,10 @@ app.post('/send', async (req, res) => {
         status: 'failed',
         error: errorText,
         timestamp: Date.now(),
-      }).catch(err => console.error('Failed to log error to Supabase:', err.message))
-
+      })
+      if (error) {
+        console.error('Failed to log error to Supabase:', error.message)
+      }
       return res.status(500).json({ success: false, error: errorText })
     }
 
@@ -287,7 +289,7 @@ app.post('/send', async (req, res) => {
     console.error('Send error:', e.message)
 
     // Log crash-level errors to Supabase too
-    await supabase.from('messages').insert({
+    const { error } = await supabase.from('messages').insert({
       phone_number_id: phoneNumberId,
       contact_phone: contactPhone,
       body: `[${tempName}] ${data?.join(' | ') || ''}`,
@@ -295,8 +297,10 @@ app.post('/send', async (req, res) => {
       status: 'failed',
       error: e.message,
       timestamp: Date.now(),
-    }).catch(err => console.error('Failed to log error to Supabase:', err.message))
-
+    })
+    if (error) {
+      console.error('Failed to log error to Supabase:', error.message)
+    }
     res.status(500).json({ success: false, error: e.message })
   }
 })
