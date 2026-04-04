@@ -764,21 +764,50 @@
 
     /* RESPONSIVE MOBILE */
     @media (max-width: 768px) {
-      .login-box { width: 90%; padding: 28px; }
-      
-      .sidebar { width: 100%; border-right: none; }
-      .chat-area { display: none; }
-      
-      body.chat-open .sidebar { display: none; }
-      body.chat-open .chat-area { display: flex; width: 100%; }
-      
-      .topbar { padding: 12px 14px; }
-      .topbar h1 { font-size: 15px; }
-      .meta-tag, .realtime-status #realtimeLabel { display: none; }
-      
-      .btn-back { display: block; }
-      .msg { max-width: 85%; }
-      
+      .login-box {
+        width: 90%;
+        padding: 28px;
+      }
+
+      .sidebar {
+        width: 100%;
+        border-right: none;
+      }
+
+      .chat-area {
+        display: none;
+      }
+
+      body.chat-open .sidebar {
+        display: none;
+      }
+
+      body.chat-open .chat-area {
+        display: flex;
+        width: 100%;
+      }
+
+      .topbar {
+        padding: 12px 14px;
+      }
+
+      .topbar h1 {
+        font-size: 15px;
+      }
+
+      .meta-tag,
+      .realtime-status #realtimeLabel {
+        display: none;
+      }
+
+      .btn-back {
+        display: block;
+      }
+
+      .msg {
+        max-width: 85%;
+      }
+
       .msg-input-area {
         padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
       }
@@ -953,6 +982,12 @@
         phoneNumberId: '847987438407450',
         accessToken: 'EAAXg6ik6ZAgABRE5CEjY77OWN6dfieagkNu9ZAhUkT24oehTz5IZBHxqW0CK11BrwWXvYCm4lnFifNyJ3uWoleX4VxsKDXj5kR2ZBM7jhBJxEM6LA68QNVgdKfaVJTWgaBGTaZCZBvqZC8aG4FSUYHnuylegJHevG64UJUqTwNNbiZC3rfsvdQSM7Yj1KOAkgi8fGQZDZD',
         label: 'SparkinPhysics',        // shown in topbar after login
+      },
+      '+19045614601': {
+        password: 'Dt30r8s2879v5',
+        phoneNumberId: '1079265581929142',
+        accessToken: 'EAAXg6ik6ZAgABRE5CEjY77OWN6dfieagkNu9ZAhUkT24oehTz5IZBHxqW0CK11BrwWXvYCm4lnFifNyJ3uWoleX4VxsKDXj5kR2ZBM7jhBJxEM6LA68QNVgdKfaVJTWgaBGTaZCZBvqZC8aG4FSUYHnuylegJHevG64UJUqTwNNbiZC3rfsvdQSM7Yj1KOAkgi8fGQZDZD',
+        label: 'أستاذ محمد صلاح - رياضيات',        // shown in topbar after login
       },
       // ── Add more accounts here ──
       // '+201234567890': {
@@ -1371,7 +1406,7 @@
     // ── OPEN CHAT ──────────────────────────────────────────────────────────────
     async function openChat(phone) {
       document.body.classList.add('chat-open');
-      
+
       activePhone = phone;
       activeMessages = [];
       activeHasMore = true;
