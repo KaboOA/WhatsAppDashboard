@@ -340,6 +340,9 @@
     .chat-list {
       flex: 1;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
     }
 
     .chat-list::-webkit-scrollbar {
@@ -869,6 +872,7 @@
         <div class="filter-bar">
           <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
           <button class="filter-btn" data-filter="unread" onclick="setFilter('unread', this)">Unread</button>
+          <button class="filter-btn" data-filter="unsent" onclick="setFilter('unsent', this)">Unsent</button>
         </div>
         <div class="stats-bar">
           <div class="stat">Chats <b id="statChats">…</b></div>
@@ -938,6 +942,32 @@
     // Sorted array of { name, phone, lastBody, lastDirection, lastTimestamp, lastStatus, unread }
     let chatSummaries = [];
     let chatMap = {};  // phone → index into chatSummaries for O(1) lookup
+
+    // ── READ STATE PERSISTENCE ────────────────────────────────────────────────
+    // Per-chat "last read timestamp" stored in localStorage so that unread counts
+    // survive page refreshes. Key is scoped by phone_number_id so multiple
+    // WhatsApp numbers don't collide.
+    let readState = {}; // { [contactPhone]: lastReadTimestamp }
+
+    function readStateKey() {
+      return 'waReadState_' + (config?.phoneNumberId || 'default');
+    }
+    function loadReadState() {
+      try {
+        readState = JSON.parse(localStorage.getItem(readStateKey()) || '{}');
+      } catch { readState = {}; }
+    }
+    function saveReadState() {
+      try { localStorage.setItem(readStateKey(), JSON.stringify(readState)); } catch {}
+    }
+    function markChatRead(phone, uptoTimestamp) {
+      if (!phone) return;
+      const prev = readState[phone] || 0;
+      if (uptoTimestamp > prev) {
+        readState[phone] = uptoTimestamp;
+        saveReadState();
+      }
+    }
 
     // Chat list pagination (cursor-based)
     let chatCursor = null;       // timestamp of last loaded chat's latest msg
@@ -1026,7 +1056,7 @@
     function logout() {
       if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
       localStorage.removeItem('waCfg');
-      config = {}; chatSummaries = []; chatMap = {};
+      config = {}; chatSummaries = []; chatMap = {}; readState = {};
       activePhone = null; activeMessages = []; supabaseClient = null;
       document.getElementById('loginPhone').value = '';
       document.getElementById('loginPassword').value = '';
@@ -1053,6 +1083,9 @@
         if (!_sLib) throw new Error('Supabase library failed to load.');
 
         supabaseClient = _sLib.createClient(config.supabaseUrl || SUPABASE_URL, config.supabaseKey || SUPABASE_KEY);
+
+        // Restore per-chat read state before loading chats, so unread counts persist across refreshes
+        loadReadState();
 
         // Load first page of chats + stats in parallel
         await Promise.all([loadChatPage(true), loadStats()]);
@@ -1134,8 +1167,8 @@
             lastBody: row.body,
             lastDirection: row.direction,
             lastTimestamp: row.timestamp,
-            lastStatus: row.status,
-            unread: 0
+            lastStatus: row.status
+            // unread intentionally left undefined — computeUnreadForChats() fills it in
           };
 
           chatMap[phone] = chatSummaries.length;
@@ -1151,7 +1184,47 @@
 
       chatCursor = cursor;
       chatListLoading = false;
+      await computeUnreadForChats();
       renderChatList();
+    }
+
+    // Query Supabase for each newly loaded chat's unread count (received msgs newer than lastRead)
+    async function computeUnreadForChats() {
+      if (!supabaseClient || !chatSummaries.length) return;
+
+      // Only compute for summaries that don't already have unread set (i.e. freshly loaded)
+      const targets = chatSummaries.filter(s => s.unread == null || s._unreadDirty);
+      if (!targets.length) return;
+
+      let newUnreadTotal = 0;
+
+      // Run in parallel but cap concurrency to avoid flooding
+      const CONCURRENCY = 8;
+      for (let i = 0; i < targets.length; i += CONCURRENCY) {
+        const batch = targets.slice(i, i + CONCURRENCY);
+        await Promise.all(batch.map(async (s) => {
+          const lastRead = readState[s.phone] || 0;
+          try {
+            let q = supabaseClient
+              .from('messages')
+              .select('id', { count: 'exact', head: true })
+              .eq('phone_number_id', config.phoneNumberId)
+              .eq('contact_phone', s.phone)
+              .eq('direction', 'received')
+              .gt('timestamp', lastRead);
+            const { count } = await q;
+            s.unread = count || 0;
+            s._unreadDirty = false;
+          } catch {
+            s.unread = 0;
+          }
+          newUnreadTotal += s.unread;
+        }));
+      }
+
+      // Recompute global unread from scratch across all known summaries
+      globalStats.unread = chatSummaries.reduce((sum, s) => sum + (s.unread || 0), 0);
+      updateStatsUI();
     }
 
     // ── STATS (DB counts) ──────────────────────────────────────────────────────
@@ -1285,6 +1358,9 @@
               chatSummaries[chatMap[phone]].unread = (chatSummaries[chatMap[phone]].unread || 0) + 1;
               globalStats.unread++;
               toast(`📩 New message from ${chatSummaries[chatMap[phone]].name}`);
+            } else if (activePhone === phone) {
+              // Chat is open — persist that we've read up through this message's timestamp
+              markChatRead(phone, msg.timestamp);
             }
 
             // Append to active chat if open
@@ -1347,6 +1423,8 @@
 
       if (currentFilter === 'unread') {
         sorted = sorted.filter(c => c.unread > 0);
+      } else if (currentFilter === 'unsent') {
+        sorted = sorted.filter(c => c.lastDirection === 'sent' && (c.lastStatus === 'failed' || c.lastStatus === 'sent'));
       }
 
       if (searchQuery) {
@@ -1358,8 +1436,9 @@
         list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">
           ${chatListLoading ? '<span class="spinner"></span> Loading...'
             : currentFilter === 'unread' ? 'No unread conversations'
-              : searchQuery ? 'No matches found'
-                : 'No conversations yet'}
+              : currentFilter === 'unsent' ? 'No unsent/failed messages'
+                : searchQuery ? 'No matches found'
+                  : 'No conversations yet'}
         </div>`;
         return;
       }
@@ -1371,7 +1450,7 @@
         const initials = getInitials(chat.name);
         return `
       <div class="chat-item ${activePhone === chat.phone ? 'active' : ''}" onclick="openChat('${esc(chat.phone)}')">
-        <div class="avatar">${initials}</div>
+        <div class="avatar">${esc(initials)}</div>
         <div class="chat-info">
           <div class="chat-name">${esc(chat.name)}</div>
           <div class="chat-preview">${esc((preview || '').substring(0, 42))}</div>
@@ -1418,6 +1497,10 @@
         globalStats.unread -= (s.unread || 0);
         if (globalStats.unread < 0) globalStats.unread = 0;
         s.unread = 0;
+        // Persist read state — use the newest message timestamp we know about for this chat
+        markChatRead(phone, s.lastTimestamp || Date.now());
+      } else {
+        markChatRead(phone, Date.now());
       }
       renderChatList();
       updateStatsUI();
@@ -1428,7 +1511,7 @@
       document.getElementById('chatArea').innerHTML = `
     <div class="chat-header">
       <button class="btn-back" onclick="closeChat()">←</button>
-      <div class="avatar" style="width:34px;height:34px;font-size:13px;">${initials}</div>
+      <div class="avatar" style="width:34px;height:34px;font-size:13px;">${esc(initials)}</div>
       <div>
         <div class="name">${esc(chat.name)}</div>
         <div class="phone">${chat.phone} · <span id="msgCountLabel">loading...</span></div>
@@ -1445,6 +1528,12 @@
     </div>`;
 
       await loadMessagesForChat(phone);
+
+      // After loading, bump read state to cover the newest message actually fetched
+      if (activeMessages.length) {
+        const newestTs = activeMessages.reduce((m, x) => x.timestamp > m ? x.timestamp : m, 0);
+        markChatRead(phone, newestTs);
+      }
 
       const cl = document.getElementById('msgCountLabel');
       if (cl) cl.textContent = `${activeTotalCount} messages`;

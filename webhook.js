@@ -1,3 +1,6 @@
+
+// add bool to stop from begin do number migration first.
+
 // require('dotenv').config()
 // const express = require('express')
 // const { createClient } = require('@supabase/supabase-js')
@@ -28,52 +31,15 @@
 //   }
 // })
 
+// // Log on startup so you can verify in Railway logs
 // console.log('📋 ALLOWED_PHONE_IDS:', JSON.stringify(ALLOWED_PHONE_IDS))
 // console.log('📋 PHONE_TO_WABA:', JSON.stringify(PHONE_TO_WABA))
 
-// // ── In-memory WABA health flag (loaded from Supabase on boot) ───────────────
-// const phoneActive = new Map() // phone_number_id → boolean
-
-// async function loadWabaStatus() {
-//   const { data, error } = await supabase
-//     .from('waba_status')
-//     .select('phone_number_id, is_active')
-
-//   if (error) {
-//     console.error('Failed to load waba_status:', error.message)
-//     ALLOWED_PHONE_IDS.forEach(id => phoneActive.set(id, true))
-//     return
-//   }
-
-//   const dbMap = new Map(data.map(r => [r.phone_number_id, r.is_active]))
-//   ALLOWED_PHONE_IDS.forEach(id => {
-//     phoneActive.set(id, dbMap.get(id) ?? true)
-//   })
-//   console.log('📡 Loaded waba_status:', Object.fromEntries(phoneActive))
-// }
-
-// // ── Alert type classification ───────────────────────────────────────────────
-// const BLOCKING_ALERTS = new Set([
-//   'PAYMENT_ISSUE',
-//   'ACCOUNT_SUSPENDED',
-//   'ACCOUNT_RESTRICTED',
-//   'ACCOUNT_BANNED',
-//   'PAYMENT_HOLD',
-// ])
-
-// const RECOVERY_ALERTS = new Set([
-//   'PAYMENT_RESOLVED',
-//   'ACCOUNT_REINSTATED',
-//   'ACCOUNT_UNBLOCKED',
-//   'ACCOUNT_UNBAN',
-// ])
-
-// // ── GET /debug — verify config ──────────────────────────────────────────────
+// // ── GET /debug — hit this in your browser to verify config ──────────────────
 // app.get('/debug', (req, res) => {
 //   res.json({
 //     allowedPhoneIds: ALLOWED_PHONE_IDS,
 //     phoneToWaba: PHONE_TO_WABA,
-//     phoneActive: Object.fromEntries(phoneActive),
 //     count: ALLOWED_PHONE_IDS.length,
 //     hasSupabaseUrl: !!process.env.SUPABASE_URL,
 //     hasAccessToken: !!process.env.WA_ACCESS_TOKEN,
@@ -98,20 +64,20 @@
 //   res.sendStatus(403)
 // })
 
-// // ── POST: Incoming messages, status updates & account alerts ─────────────────
+// // ── POST: Incoming messages & status updates ─────────────────────────────────
 // app.post('/webhook', async (req, res) => {
 //   res.sendStatus(200)
 
 //   try {
+//     // ── DEBUG: log raw entry so we can see exactly what Meta sends ──
 //     const entry = req.body.entry?.[0]
 //     const change = entry?.changes?.[0]
 //     const value = change?.value
-//     const field = change?.field
 
 //     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 //     console.log('📨 WEBHOOK HIT')
 //     console.log('   entry.id:', entry?.id)
-//     console.log('   field:', field)
+//     console.log('   field:', change?.field)
 //     console.log('   phone_number_id:', value?.metadata?.phone_number_id)
 //     console.log('   display_phone:', value?.metadata?.display_phone_number)
 //     console.log('   has messages:', !!(value?.messages?.length))
@@ -119,57 +85,7 @@
 //     console.log('   whitelist:', JSON.stringify(ALLOWED_PHONE_IDS))
 //     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-//     // ── Handle account_alerts (payment issues, restrictions) ──
-//     if (field === 'account_alerts') {
-//       const alert = value
-//       console.log('🚨 account_alerts received:', JSON.stringify(alert))
-
-//       const wabaId = entry?.id
-//       const affectedPhones = ALLOWED_PHONE_IDS.filter(id => PHONE_TO_WABA[id] === wabaId)
-
-//       if (!affectedPhones.length) {
-//         console.log(`⚠️ account_alerts for unknown WABA ${wabaId}, skipping`)
-//         return
-//       }
-
-//       const alertType = alert?.alert_type || ''
-//       const isBlocking = BLOCKING_ALERTS.has(alertType)
-//       const isRecovery = RECOVERY_ALERTS.has(alertType)
-
-//       if (isBlocking || isRecovery) {
-//         const newStatus = isRecovery
-
-//         for (const phoneId of affectedPhones) {
-//           phoneActive.set(phoneId, newStatus)
-
-//           const { error } = await supabase
-//             .from('waba_status')
-//             .upsert({
-//               phone_number_id: phoneId,
-//               is_active: newStatus,
-//               last_alert: alert,
-//               updated_at: new Date().toISOString(),
-//             }, { onConflict: 'phone_number_id' })
-
-//           if (error) console.error('waba_status upsert error:', error.message)
-//           else console.log(`📡 Phone ${phoneId} is_active → ${newStatus} (${alertType})`)
-//         }
-//       } else {
-//         // Unknown alert type — log it for future handling
-//         console.log(`ℹ️ Unhandled alert_type: ${alertType}`)
-//         for (const phoneId of affectedPhones) {
-//           await supabase.from('waba_status').upsert({
-//             phone_number_id: phoneId,
-//             last_alert: alert,
-//             updated_at: new Date().toISOString(),
-//           }, { onConflict: 'phone_number_id' })
-//         }
-//       }
-
-//       return // account_alerts has no messages/statuses
-//     }
-
-//     // ── Whitelist check for message/status webhooks ──
+//     // Check against whitelist of allowed phone number IDs
 //     const incomingPhoneId = value?.metadata?.phone_number_id
 //     if (!incomingPhoneId) {
 //       console.log('⚠️ BLOCKED — no phone_number_id in payload')
@@ -184,6 +100,27 @@
 //       })
 //       return
 //     }
+
+//     // Check if the number is active in Supabase
+//     try {
+//       const { data: numberData, error: numberError } = await supabase
+//         .from('numbers')
+//         .select('isActive')
+//         .eq('phone_number_id', incomingPhoneId)
+//         .single()
+
+//       if (numberError && numberError.code !== 'PGRST116') {
+//         console.error('Supabase numbers query error:', numberError.message)
+//       }
+
+//       if (numberData && numberData.isActive === false) {
+//         console.log(`⚠️ BLOCKED — number ${incomingPhoneId} is marked inactive in database`)
+//         return // Just return 200 (already sent) so Meta stops retrying
+//       }
+//     } catch (err) {
+//       console.error('Exception checking number status:', err.message)
+//     }
+
 //     console.log(`✅ ALLOWED — phone_number_id ${incomingPhoneId}`)
 
 //     const messages = value?.messages
@@ -194,25 +131,12 @@
 //       for (const s of statuses) {
 //         const updateData = { status: s.status, phone_number_id: incomingPhoneId }
 
+//         // Capture error details from failed status updates
 //         if (s.status === 'failed' && s.errors?.length) {
 //           updateData.error = s.errors.map(e => e.title || e.message || JSON.stringify(e)).join('; ')
-
-//           // Auto-detect payment suspension from delivery errors
-//           const hasPaymentError = s.errors.some(e =>
-//             e.code === 131042 || e.code === '131042'
-//           )
-//           if (hasPaymentError && phoneActive.get(incomingPhoneId) !== false) {
-//             console.log(`🚨 Payment error detected via status for ${incomingPhoneId}`)
-//             phoneActive.set(incomingPhoneId, false)
-//             await supabase.from('waba_status').upsert({
-//               phone_number_id: incomingPhoneId,
-//               is_active: false,
-//               last_alert: { source: 'status_error', code: 131042, errors: s.errors },
-//               updated_at: new Date().toISOString(),
-//             }, { onConflict: 'phone_number_id' })
-//           }
 //         }
 
+//         // Meta sends recipient_id on status updates — use it to fill contact_phone
 //         if (s.recipient_id) {
 //           updateData.contact_phone = '+' + s.recipient_id
 //         }
@@ -306,16 +230,27 @@
 //     return res.status(400).json({ success: false, error: 'Invalid or missing phoneNumberId' })
 //   }
 
-//   // Check if this phone number's WABA is active
-//   if (!phoneActive.get(phoneNumberId)) {
-//     console.log(`🚫 /send blocked — phone ${phoneNumberId} WABA suspended`)
-//     return res.status(503).json({
-//       success: false,
-//       error: 'WABA suspended (payment or policy issue). Check Meta Business Manager.',
-//       suspended: true,
-//     })
+//   // Check if the number is active in Supabase
+//   try {
+//     const { data: numberData, error: numberError } = await supabase
+//       .from('numbers')
+//       .select('isActive')
+//       .eq('phone_number_id', phoneNumberId)
+//       .single()
+
+//     if (numberError && numberError.code !== 'PGRST116') {
+//       console.error('Supabase numbers query error:', numberError.message)
+//     }
+
+//     if (numberData && numberData.isActive === false) {
+//       console.log(`⚠️ /send blocked — number ${phoneNumberId} is marked inactive in database`)
+//       return res.status(403).json({ success: false, error: 'This number is currently inactive. There is an issue with this number.' })
+//     }
+//   } catch (err) {
+//     console.error('Exception checking number status:', err.message)
 //   }
 
+//   // Normalize phone early so it's available in all branches
 //   const contactPhone = to.startsWith('+') ? to : '+' + to
 
 //   try {
@@ -351,23 +286,11 @@
 //     if (!metaRes.ok) {
 //       console.error('Meta API error:', metaData)
 
-//       // Auto-detect payment suspension from send errors
-//       const errorCode = metaData.error?.code
-//       if (errorCode === 131042 || errorCode === '131042') {
-//         console.log(`🚨 Payment error on send for ${phoneNumberId}, marking suspended`)
-//         phoneActive.set(phoneNumberId, false)
-//         await supabase.from('waba_status').upsert({
-//           phone_number_id: phoneNumberId,
-//           is_active: false,
-//           last_alert: { source: 'send_error', code: 131042, error: metaData.error },
-//           updated_at: new Date().toISOString(),
-//         }, { onConflict: 'phone_number_id' })
-//       }
-
 //       const wabaId = PHONE_TO_WABA[phoneNumberId]
 //       const errorText = metaData.error?.message || JSON.stringify(metaData)
 //       const renderedBody = await renderTemplate(tempName, data, wabaId)
 
+//       // Log the failed attempt to Supabase with error details
 //       const { error } = await supabase.from('messages').insert({
 //         phone_number_id: phoneNumberId,
 //         contact_phone: contactPhone,
@@ -377,13 +300,10 @@
 //         error: errorText,
 //         timestamp: Date.now(),
 //       })
-//       if (error) console.error('Failed to log error to Supabase:', error.message)
-
-//       return res.status(500).json({
-//         success: false,
-//         error: errorText,
-//         suspended: errorCode === 131042 || errorCode === '131042',
-//       })
+//       if (error) {
+//         console.error('Failed to log error to Supabase:', error.message)
+//       }
+//       return res.status(500).json({ success: false, error: errorText })
 //     }
 
 //     // ── Success — save the sent message ──
@@ -412,6 +332,7 @@
 //   } catch (e) {
 //     console.error('Send error:', e.message)
 
+//     // Log crash-level errors to Supabase too
 //     const { error } = await supabase.from('messages').insert({
 //       phone_number_id: phoneNumberId,
 //       contact_phone: contactPhone,
@@ -421,49 +342,15 @@
 //       error: e.message,
 //       timestamp: Date.now(),
 //     })
-//     if (error) console.error('Failed to log error to Supabase:', error.message)
-
+//     if (error) {
+//       console.error('Failed to log error to Supabase:', error.message)
+//     }
 //     res.status(500).json({ success: false, error: e.message })
 //   }
 // })
 
-// // ── POST /waba-status — manually set phone active/inactive ──────────────────
-// app.post('/waba-status', async (req, res) => {
-//   const { phoneNumberId, isActive } = req.body
-
-//   if (!ALLOWED_PHONE_IDS.includes(phoneNumberId)) {
-//     return res.status(400).json({ error: 'Unknown phoneNumberId' })
-//   }
-
-//   phoneActive.set(phoneNumberId, isActive)
-
-//   const { error } = await supabase
-//     .from('waba_status')
-//     .upsert({
-//       phone_number_id: phoneNumberId,
-//       is_active: isActive,
-//       last_alert: { manual: true, timestamp: new Date().toISOString() },
-//       updated_at: new Date().toISOString(),
-//     }, { onConflict: 'phone_number_id' })
-
-//   if (error) return res.status(500).json({ error: error.message })
-
-//   console.log(`🔧 Manual override: phone ${phoneNumberId} is_active → ${isActive}`)
-//   res.json({ success: true, phoneNumberId, isActive })
-// })
-
-// // ── GET /waba-status — check current status of all phones ───────────────────
-// app.get('/waba-status', (req, res) => {
-//   res.json(Object.fromEntries(phoneActive))
-// })
-
-// // ── Start server & load persisted status ────────────────────────────────────
 // const PORT = process.env.PORT || 3000
-// app.listen(PORT, async () => {
-//   console.log(`🚀 Webhook server running on port ${PORT}`)
-//   await loadWabaStatus()
-// })
-
+// app.listen(PORT, () => console.log(`🚀 Webhook server running on port ${PORT}`))
 
 require('dotenv').config()
 const express = require('express')
@@ -661,7 +548,7 @@ async function renderTemplate(tempName, data, wabaId) {
 
 // ── POST: Send a template message ────────────────────────────────────────────
 app.post('/send', async (req, res) => {
-  let { to, tempName, data, phoneNumberId } = req.body
+  let { to, tempName, data, phoneNumberId, language } = req.body
 
   if (!phoneNumberId) {
     phoneNumberId = '1057331837443942'
@@ -691,7 +578,7 @@ app.post('/send', async (req, res) => {
           type: 'template',
           template: {
             name: tempName,
-            language: { code: 'en' },
+            language: { code: language || 'en' },
             components: data?.length ? [
               {
                 type: 'body',

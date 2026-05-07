@@ -9,7 +9,7 @@ def send_whatsapp_template(to: str, temp_name: str, data: list[str]):
             json={
                 "to": to,
                 "tempName": temp_name,
-                          "phoneNumberId": "847987438407450",
+                "phoneNumberId": "1057331837443942",
                 "data": data
             },
             timeout=30
@@ -59,8 +59,8 @@ def send_bulk(messages: list[dict]):
 send_whatsapp_template(
     to="201122267427",
     
-    temp_name="amin_attende_temp",
-    data=["أحمد قباري","الاول","22","السبت","⬅️الكود: 22669885⬅️الباسورد: 02569885"]
+    temp_name="otp_temp",
+    data=["123456"]
 )
 
 # Bulk send example
