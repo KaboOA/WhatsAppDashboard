@@ -5,7 +5,7 @@ RAILWAY_URL = "https://whatsappdashboard-production.up.railway.app"
 def send_whatsapp_template(to: str, temp_name: str, data: list[str]):
     try:
         response = requests.post(
-            f"{RAILWAY_URL}/send",
+            f"{RAILWAY_URL}/send-otp",
             json={
                 "to": to,
                 "tempName": temp_name,
@@ -59,7 +59,6 @@ def send_bulk(messages: list[dict]):
 # Single message
 send_whatsapp_template(
     to="201122267427",
-    
     temp_name="otp_temp",
     data=["123456"]
 )

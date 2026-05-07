@@ -683,7 +683,7 @@ app.post('/send-otp', async (req, res) => {
           to: to.startsWith('+') ? to : '+' + to,
           type: 'template',
           template: {
-            name: process.env.RAILWAY_OTP_TEMPLATE_NAME,
+            name: 'otp_temp',
             language: { code: language || 'en' },
             components: [
               {
