@@ -683,12 +683,28 @@ app.post('/send-otp', async (req, res) => {
           to: to.startsWith('+') ? to : '+' + to,
           type: 'template',
           template: {
-            name: 'otp_temp',
-            language: { code: language || 'en' },
-            components: [
+            "name": "otp_temp",
+            "language": language || "en",
+            "category": "authentication",
+            "message_send_ttl_seconds": 600,
+            "components": [
               {
-                type: 'body',
-                parameters: [{ type: 'text', text: code }]
+                "type": "body",
+                "add_security_recommendation": false
+              },
+              {
+                "type": "footer",
+                "code_expiration_minutes": 10
+              },
+              {
+                "type": "buttons",
+                "buttons": [
+                  {
+                    "type": "otp",
+                    "otp_type": "copy_code",
+                    "text": "نسخ الرمز"
+                  }
+                ]
               }
             ]
           }

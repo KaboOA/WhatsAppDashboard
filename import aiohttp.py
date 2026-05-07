@@ -5,13 +5,41 @@ RAILWAY_URL = "https://whatsappdashboard-production.up.railway.app"
 def send_whatsapp_template(to: str, temp_name: str, data: list[str]):
     try:
         response = requests.post(
-            f"{RAILWAY_URL}/send-otp",
+            f"{RAILWAY_URL}/send",
             json={
                 "to": to,
                 "tempName": temp_name,
                 "language": "ar",
                 "phoneNumberId": "1057331837443942",
                 "data": data
+            },
+            timeout=30
+        )
+
+        result = response.json()
+
+        if not result.get("success", False):
+            print(f"❌ Failed to send to {to}: {result.get('error', 'Unknown error')}")
+        elif result.get("warning"):
+            print(f"⚠️ Sent to {to} (id: {result['id']}) but warning: {result['warning']}")
+        else:
+            print(f"✅ Sent to {to} (id: {result['id']})")
+
+        return result
+
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Network error sending to {to}: {e}")
+        return {"success": False, "error": str(e)}
+
+def send_otp_whatsapp_template(to: str,  code: str):
+    try:
+        response = requests.post(
+            f"{RAILWAY_URL}/send-otp",
+            json={
+                "to": to,
+                "language": "ar",
+                "phoneNumberId": "1057331837443942",
+                "code": code
             },
             timeout=30
         )
@@ -59,10 +87,15 @@ def send_bulk(messages: list[dict]):
 # Single message
 send_whatsapp_template(
     to="201122267427",
+    
     temp_name="otp_temp",
     data=["123456"]
 )
-
+send_otp_whatsapp_template(
+    to="201122267427",
+    
+    code="123456"
+)
 # Bulk send example
 # send_bulk([
 #     {"to": "201114634917", "temp_name": "template_name", "data": ["param1", "param2"]},
