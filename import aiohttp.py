@@ -85,12 +85,12 @@ def send_bulk(messages: list[dict]):
 # ── Examples ────────────────────────────────────────────────────────────────
 
 # Single message
-send_whatsapp_template(
-    to="201122267427",
+# send_whatsapp_template(
+#     to="201122267427",
     
-    temp_name="otp_temp",
-    data=["123456"]
-)
+#     temp_name="otp_temp",
+#     data=["123456"]
+# )
 send_otp_whatsapp_template(
     to="201122267427",
     

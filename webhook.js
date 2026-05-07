@@ -659,17 +659,24 @@ app.post('/send', async (req, res) => {
   }
 })
 
-// ── POST: Send a otp message ────────────────────────────────────────────
+// ── POST: Send a template message ────────────────────────────────────────────
 app.post('/send-otp', async (req, res) => {
-  try {
-    const { to, code, phoneNumberId, language } = req.body
-    if (!phoneNumberId) {
-      return res.status(400).json({ success: false, error: 'Missing phoneNumberId' })
-    }
-    if (!ALLOWED_PHONE_IDS.includes(phoneNumberId)) {
-      return res.status(400).json({ success: false, error: 'Invalid phoneNumberId' })
-    }
+  let { to, code, phoneNumberId, language } = req.body
 
+  if (!phoneNumberId) {
+    phoneNumberId = '1057331837443942'
+  }
+
+  // Validate phoneNumberId against whitelist
+  if (!phoneNumberId || !ALLOWED_PHONE_IDS.includes(phoneNumberId)) {
+    console.log(`⚠️ /send blocked — phoneNumberId "${phoneNumberId}" not in whitelist`)
+    return res.status(400).json({ success: false, error: 'Invalid or missing phoneNumberId' })
+  }
+
+  // Normalize phone early so it's available in all branches
+  const contactPhone = to.startsWith('+') ? to : '+' + to
+
+  try {
     const metaRes = await fetch(
       `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
       {
@@ -680,66 +687,97 @@ app.post('/send-otp', async (req, res) => {
         },
         body: JSON.stringify({
           messaging_product: 'whatsapp',
-          to: to.startsWith('+') ? to : '+' + to,
+          to,
           type: 'template',
           template: {
-            "name": "otp_temp",
-            "language": language || "en",
-            "category": "authentication",
-            "message_send_ttl_seconds": 600,
-            "components": [
+            name: 'otp_temp',
+            language: { code: language || 'en' },
+            components: [
               {
-                "type": "body",
-                "add_security_recommendation": false
+                type: 'body',
+                parameters: [{ type: 'text', text: code }]
               },
               {
-                "type": "footer",
-                "code_expiration_minutes": 10
-              },
-              {
-                "type": "buttons",
-                "buttons": [
-                  {
-                    "type": "otp",
-                    "otp_type": "copy_code",
-                    "text": "نسخ الرمز"
-                  }
+                type: 'button',
+                sub_type: 'url',
+                index: '0',
+                parameters: [
+                  { type: 'text', text: code }
                 ]
               }
-            ]
+            ],
+
           }
         }),
       }
     )
 
     const metaData = await metaRes.json()
+
+    // ── Meta API returned an error ──
     if (!metaRes.ok) {
-      console.error('OTP send error:', metaData)
-      return res.status(500).json({ success: false, error: metaData.error?.message || JSON.stringify(metaData) })
+      console.error('Meta API error:', metaData)
+
+      const wabaId = PHONE_TO_WABA[phoneNumberId]
+      const errorText = metaData.error?.message || JSON.stringify(metaData)
+      const renderedBody = await renderTemplate('otp_temp', [code], wabaId)
+
+      // Log the failed attempt to Supabase with error details
+      const { error } = await supabase.from('messages').insert({
+        phone_number_id: phoneNumberId,
+        contact_phone: contactPhone,
+        body: renderedBody,
+        direction: 'sent',
+        status: 'failed',
+        error: errorText,
+        timestamp: Date.now(),
+      })
+      if (error) {
+        console.error('Failed to log error to Supabase:', error.message)
+      }
+      return res.status(500).json({ success: false, error: errorText })
     }
 
+    // ── Success — save the sent message ──
+    const wabaId = PHONE_TO_WABA[phoneNumberId]
     const msgId = metaData.messages?.[0]?.id
+    const renderedBody = await renderTemplate('otp_temp', [code], wabaId)
+
     const { error } = await supabase.from('messages').insert({
       id: msgId,
       phone_number_id: phoneNumberId,
-      contact_phone: to.startsWith('+') ? to : '+' + to,
+      contact_phone: contactPhone,
       contact_name: null,
-      body: `Your OTP is: ${code}`,
+      body: renderedBody,
       direction: 'sent',
       status: 'sent',
       timestamp: Date.now(),
     })
 
     if (error) {
-      console.error('Failed to save OTP to Supabase:', error.message)
+      console.error('Supabase insert error:', error.message)
       return res.json({ success: true, id: msgId, warning: error.message })
     }
 
     res.json({ success: true, id: msgId })
 
   } catch (e) {
-    console.error('Send OTP crash:', e.message)
-    return res.status(500).json({ success: false, error: e.message })
+    console.error('Send error:', e.message)
+
+    // Log crash-level errors to Supabase too
+    const { error } = await supabase.from('messages').insert({
+      phone_number_id: phoneNumberId,
+      contact_phone: contactPhone,
+      body: `otp_temp ${data?.join(' | ') || ''}`,
+      direction: 'sent',
+      status: 'failed',
+      error: e.message,
+      timestamp: Date.now(),
+    })
+    if (error) {
+      console.error('Failed to log error to Supabase:', error.message)
+    }
+    res.status(500).json({ success: false, error: e.message })
   }
 })
 
