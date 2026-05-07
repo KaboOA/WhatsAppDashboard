@@ -659,5 +659,73 @@ app.post('/send', async (req, res) => {
   }
 })
 
+// ── POST: Send a otp message ────────────────────────────────────────────
+app.post('/send-otp', async (req, res) => {
+  try {
+    const { to, code, phoneNumberId, language } = req.body
+    if (!phoneNumberId) {
+      return res.status(400).json({ success: false, error: 'Missing phoneNumberId' })
+    }
+    if (!ALLOWED_PHONE_IDS.includes(phoneNumberId)) {
+      return res.status(400).json({ success: false, error: 'Invalid phoneNumberId' })
+    }
+
+    const metaRes = await fetch(
+      `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.WA_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: to.startsWith('+') ? to : '+' + to,
+          type: 'template',
+          template: {
+            name: process.env.RAILWAY_OTP_TEMPLATE_NAME,
+            language: { code: language || 'en' },
+            components: [
+              {
+                type: 'body',
+                parameters: [{ type: 'text', text: code }]
+              }
+            ]
+          }
+        }),
+      }
+    )
+
+    const metaData = await metaRes.json()
+    if (!metaRes.ok) {
+      console.error('OTP send error:', metaData)
+      return res.status(500).json({ success: false, error: metaData.error?.message || JSON.stringify(metaData) })
+    }
+
+    const msgId = metaData.messages?.[0]?.id
+    const { error } = await supabase.from('messages').insert({
+      id: msgId,
+      phone_number_id: phoneNumberId,
+      contact_phone: to.startsWith('+') ? to : '+' + to,
+      contact_name: null,
+      body: `Your OTP is: ${code}`,
+      direction: 'sent',
+      status: 'sent',
+      timestamp: Date.now(),
+    })
+
+    if (error) {
+      console.error('Failed to save OTP to Supabase:', error.message)
+      return res.json({ success: true, id: msgId, warning: error.message })
+    }
+
+    res.json({ success: true, id: msgId })
+
+  } catch (e) {
+    console.error('Send OTP crash:', e.message)
+    return res.status(500).json({ success: false, error: e.message })
+  }
+})
+
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log(`🚀 Webhook server running on port ${PORT}`))

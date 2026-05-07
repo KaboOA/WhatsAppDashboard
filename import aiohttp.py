@@ -9,6 +9,7 @@ def send_whatsapp_template(to: str, temp_name: str, data: list[str]):
             json={
                 "to": to,
                 "tempName": temp_name,
+                "language": "ar",
                 "phoneNumberId": "1057331837443942",
                 "data": data
             },
