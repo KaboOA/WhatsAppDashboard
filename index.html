@@ -958,7 +958,7 @@
       } catch { readState = {}; }
     }
     function saveReadState() {
-      try { localStorage.setItem(readStateKey(), JSON.stringify(readState)); } catch {}
+      try { localStorage.setItem(readStateKey(), JSON.stringify(readState)); } catch { }
     }
     function markChatRead(phone, uptoTimestamp) {
       if (!phone) return;
@@ -995,6 +995,12 @@
     // Each login phone maps to a phone_number_id + access token.
     // Add more entries to support more WhatsApp numbers.
     const ACCOUNTS = {
+      '+19383337801': {
+        password: 'Qf823Im8921v7',
+        phoneNumberId: '1243807105478673',
+        accessToken: 'EAATjTIm5STkBSOld6ScJ2gjtQJQ5ZBnwQVEZANWc3CHimN1YHNllMEmmipwf9wMH6yVMFZCHJmukx7Y1pZCvKJLrNfxXLSZCd0yy5ZAF16j3jIuDWgnVRivcLpR8CpPG5TyIK0ECc07FctgT5aP6WxAl9q2g9KQTYhcicViAoLZA7HjeYhDbRZCoGZClZBre1d7f7jEQZDZD',
+        label: 'خديوي الأحياء محمد كمال',        // shown in topbar after login
+      },
       '+13505005721': {
         password: 'Gh844Acb5921',
         phoneNumberId: '1057331837443942',
