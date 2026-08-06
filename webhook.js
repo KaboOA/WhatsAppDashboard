@@ -362,9 +362,9 @@ const app = express()
 // ── CORS Configuration ─────────────────────────────────────────────────────────
 app.use(cors({
   origin: [
-    'http://localhost:53681', // Flutter web dev
+    'http://localhost:64816', // Flutter web dev
     'http://localhost:5000',
-    'https://your-production-domain.com'
+    'https://krypton-karim-karm.vercel.app'
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
