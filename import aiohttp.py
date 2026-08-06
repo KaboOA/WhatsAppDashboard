@@ -9,8 +9,7 @@ def send_whatsapp_template(to: str, temp_name: str, data: list[str]):
             json={
                 "to": to,
                 "tempName": temp_name,
-                "language": "ar",
-                "phoneNumberId": "1057331837443942",
+                "phoneNumberId": "1243807105478673",
                 "data": data
             },
             timeout=30
@@ -38,7 +37,7 @@ def send_otp_whatsapp_template(to: str,  code: str):
             json={
                 "to": to,
                 "language": "ar",
-                "phoneNumberId": "1057331837443942",
+                "phoneNumberId": "1243807105478673",
                 "code": code
             },
             timeout=30
@@ -85,17 +84,17 @@ def send_bulk(messages: list[dict]):
 # ── Examples ────────────────────────────────────────────────────────────────
 
 # Single message
-# send_whatsapp_template(
-#     to="201122267427",
+send_whatsapp_template(
+    to="201008942259",
+    data=["*هيام*","*الاحد (28/7)*","*من 04:00 الي 07:00 مساءً*","*سنتر فاروس*","01026168790","01068960965",],
+    temp_name="std_warning"
     
-#     temp_name="otp_temp",
-#     data=["123456"]
-# )
-send_otp_whatsapp_template(
-    to="201122267427",
-    
-    code="123456"
 )
+# send_otp_whatsapp_template(
+#     to="201008942259",
+    
+#     code="123456"
+# )
 # Bulk send example
 # send_bulk([
 #     {"to": "201114634917", "temp_name": "template_name", "data": ["param1", "param2"]},

@@ -355,8 +355,22 @@
 require('dotenv').config()
 const express = require('express')
 const { createClient } = require('@supabase/supabase-js')
+const cors = require('cors');
 
 const app = express()
+
+// ── CORS Configuration ─────────────────────────────────────────────────────────
+app.use(cors({
+  origin: [
+    'http://localhost:53681', // Flutter web dev
+    'http://localhost:5000',
+    'https://your-production-domain.com'
+  ],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.options('*', cors());
 app.use(express.json())
 
 const supabase = createClient(
