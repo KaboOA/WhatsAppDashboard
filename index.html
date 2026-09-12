@@ -979,6 +979,13 @@
     // Stats
     let globalStats = { chats: 0, sent: 0, recv: 0, unread: 0 };
 
+    // ── BACKEND BASE URL ───────────────────────────────────────────────────────
+    // If frontend is served directly by the backend (same origin), relative '' is used.
+    // If frontend is hosted separately (Vercel, Live Server, or file://), points to the backend.
+    const BACKEND_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? (window.location.port === '3000' ? '' : 'http://localhost:3000')
+      : (window.location.protocol === 'file:' ? 'http://localhost:3000' : (window.location.origin.includes('vercel.app') ? 'https://whatsappdashboard-production.up.railway.app' : ''));
+
     // ── LOGIN ──────────────────────────────────────────────────────────────────
     async function login() {
       const phone = document.getElementById('loginPhone').value.trim();
@@ -995,7 +1002,7 @@
       }
 
       try {
-        const res = await fetch('/api/login', {
+        const res = await fetch(`${BACKEND_URL}/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone, password })

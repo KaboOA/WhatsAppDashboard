@@ -100,6 +100,15 @@ app.post('/api/login', (req, res) => {
   })
 })
 
+// ── GET /api/config — Public configuration for frontend ──────────────────────
+app.get('/api/config', (req, res) => {
+  res.json({
+    backendUrl: process.env.BACKEND_URL || '',
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+  })
+})
+
 // ── GET /debug — Verify configuration ──────────────────────────────────────────
 app.get('/debug', (req, res) => {
   res.json({
