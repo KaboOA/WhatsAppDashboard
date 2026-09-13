@@ -68,13 +68,128 @@ function getAccessTokenForPhoneId(phoneId) {
   return acc?.accessToken || process.env.WA_ACCESS_TOKEN
 }
 
+// ── In-Memory Numbers Health Cache ─────────────────────────────────────────────
+// Checks are 100% instant in RAM (0ms latency, 0 DB cost during message sending).
+// Cache is automatically refreshed periodically (default 15 mins) and via Supabase Realtime.
+const NUMBERS_CACHE_TTL_MS = parseInt(process.env.NUMBERS_CACHE_TTL_MS || '900000', 10) // 15 mins default
+const NUMBERS_CACHE = {}
+let LAST_NUMBERS_CACHE_UPDATE = 0
+let isRefreshingCache = false
+
+async function refreshNumbersCache(force = false) {
+  if (isRefreshingCache && !force) return
+  isRefreshingCache = true
+
+  try {
+    // 1. Initialize from in-memory / .env ACCOUNTS
+    Object.values(ACCOUNTS).forEach(acc => {
+      if (acc.phoneNumberId) {
+        const hasIssue = acc.hasIssue === true || acc.has_issue === true || acc.isActive === false || acc.is_active === false
+        NUMBERS_CACHE[acc.phoneNumberId] = {
+          phoneNumberId: acc.phoneNumberId,
+          label: acc.label || acc.phoneNumberId,
+          hasIssue: hasIssue,
+          isActive: !hasIssue,
+          issueReason: hasIssue ? (acc.issueReason || acc.issue_reason || 'Marked with issue in accounts configuration') : null
+        }
+      }
+    })
+
+    // 2. Fetch latest status from Supabase numbers table (1 single batch query)
+    const { data, error } = await supabase
+      .from('numbers')
+      .select('phone_number_id, "isActive", has_issue, issue_reason, label')
+
+    if (!error && Array.isArray(data)) {
+      data.forEach(row => {
+        const phoneId = row.phone_number_id
+        if (phoneId) {
+          const hasIssue = row.has_issue === true || row.isActive === false
+          NUMBERS_CACHE[phoneId] = {
+            phoneNumberId: phoneId,
+            label: row.label || NUMBERS_CACHE[phoneId]?.label || phoneId,
+            hasIssue: hasIssue,
+            isActive: !hasIssue,
+            issueReason: hasIssue ? (row.issue_reason || 'Marked with issue in database') : null
+          }
+        }
+      })
+    }
+
+    LAST_NUMBERS_CACHE_UPDATE = Date.now()
+  } catch (err) {
+    // Fallback gracefully to in-memory config
+  } finally {
+    isRefreshingCache = false
+  }
+}
+
+// Initial cache load on server startup
+refreshNumbersCache(true).catch(() => {})
+
+// Realtime listener: updates cache instantly if database changes in Supabase
+try {
+  supabase
+    .channel('numbers_status_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'numbers' }, payload => {
+      const row = payload.new
+      if (row && row.phone_number_id) {
+        const hasIssue = row.has_issue === true || row.isActive === false
+        NUMBERS_CACHE[row.phone_number_id] = {
+          phoneNumberId: row.phone_number_id,
+          label: row.label || NUMBERS_CACHE[row.phone_number_id]?.label || row.phone_number_id,
+          hasIssue: hasIssue,
+          isActive: !hasIssue,
+          issueReason: hasIssue ? (row.issue_reason || 'Marked with issue in database') : null
+        }
+        console.log(`🔄 Realtime cache updated for number ${row.phone_number_id}: hasIssue=${hasIssue}`)
+      }
+    })
+    .subscribe()
+} catch (e) {
+  // Realtime channel is optional
+}
+
+// ── Helper: Check whether a phone number ID has an issue or is disabled ─────────
+async function checkPhoneNumberHealth(phoneId) {
+  // 1. Whitelist validation
+  if (!phoneId || !ALLOWED_PHONE_IDS.includes(phoneId)) {
+    return {
+      allowed: false,
+      hasIssue: true,
+      error: `Phone number ID "${phoneId}" is not in the whitelist.`,
+      reason: 'Not in whitelist'
+    }
+  }
+
+  // 2. Refresh cache in background if TTL has expired
+  if (Date.now() - LAST_NUMBERS_CACHE_UPDATE > NUMBERS_CACHE_TTL_MS) {
+    refreshNumbersCache().catch(() => {})
+  }
+
+  // 3. Instant In-Memory RAM Lookup (0ms, 0 DB cost)
+  const cached = NUMBERS_CACHE[phoneId]
+  if (cached && cached.hasIssue) {
+    const reason = cached.issueReason || 'Number is marked with an issue'
+    return {
+      allowed: false,
+      hasIssue: true,
+      error: `Phone number ${phoneId} has an active issue and cannot send messages. (${reason})`,
+      reason: reason,
+      label: cached.label
+    }
+  }
+
+  return { allowed: true, hasIssue: false, label: cached?.label }
+}
+
 // ── Serve Frontend ─────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'))
 })
 
 // ── POST /api/login — Validate phone & password against .env ACCOUNTS ─────────
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { phone, password } = req.body || {}
   if (!phone || !password) {
     return res.status(400).json({ success: false, error: 'Phone number and password are required.' })
@@ -87,6 +202,8 @@ app.post('/api/login', (req, res) => {
     return res.status(401).json({ success: false, error: 'Invalid phone number or password.' })
   }
 
+  const health = await checkPhoneNumberHealth(account.phoneNumberId)
+
   return res.json({
     success: true,
     account: {
@@ -94,6 +211,9 @@ app.post('/api/login', (req, res) => {
       phoneNumberId: account.phoneNumberId,
       accessToken: account.accessToken,
       label: account.label || cleanPhone,
+      hasIssue: health.hasIssue,
+      isActive: health.allowed,
+      issueReason: health.reason || null,
       supabaseUrl: process.env.SUPABASE_URL,
       supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNib3dpa2VjZGxpcmpjb2xlaHZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MDE0NzQsImV4cCI6MjA4OTI3NzQ3NH0.z8CVfotwo7aRxSWYvTSqpkybbThT-F8g1p33KLQK7zs',
     }
@@ -109,12 +229,108 @@ app.get('/api/config', (req, res) => {
   })
 })
 
+// ── GET /api/numbers — List all registered numbers & their status ──────────────
+app.get('/api/numbers', async (req, res) => {
+  const numbersList = []
+  for (const [phone, acc] of Object.entries(ACCOUNTS)) {
+    const health = await checkPhoneNumberHealth(acc.phoneNumberId)
+    numbersList.push({
+      phone,
+      phoneNumberId: acc.phoneNumberId,
+      label: acc.label || phone,
+      hasIssue: health.hasIssue,
+      isActive: health.allowed,
+      issueReason: health.reason || null,
+    })
+  }
+  res.json({ success: true, count: numbersList.length, numbers: numbersList })
+})
+
+// ── POST /api/numbers/status — Update issue / active status of a number ────────
+app.post('/api/numbers/status', async (req, res) => {
+  const { phoneNumberId, hasIssue, isActive, issueReason } = req.body || {}
+
+  if (!phoneNumberId) {
+    return res.status(400).json({ success: false, error: 'phoneNumberId is required.' })
+  }
+
+  // 1. Update in-memory NUMBERS_CACHE instantly (0ms)
+  if (!NUMBERS_CACHE[phoneNumberId]) {
+    NUMBERS_CACHE[phoneNumberId] = { phoneNumberId, label: phoneNumberId }
+  }
+  if (typeof hasIssue === 'boolean') {
+    NUMBERS_CACHE[phoneNumberId].hasIssue = hasIssue
+    NUMBERS_CACHE[phoneNumberId].isActive = !hasIssue
+  }
+  if (typeof isActive === 'boolean') {
+    NUMBERS_CACHE[phoneNumberId].isActive = isActive
+    NUMBERS_CACHE[phoneNumberId].hasIssue = !isActive
+  }
+  if (typeof issueReason === 'string') {
+    NUMBERS_CACHE[phoneNumberId].issueReason = issueReason
+  } else if (hasIssue === false || isActive === true) {
+    NUMBERS_CACHE[phoneNumberId].issueReason = null
+  }
+
+  // 2. Update in-memory ACCOUNTS object
+  const acc = Object.values(ACCOUNTS).find(a => a.phoneNumberId === phoneNumberId)
+  if (acc) {
+    if (typeof hasIssue === 'boolean') acc.hasIssue = hasIssue
+    if (typeof isActive === 'boolean') acc.isActive = isActive
+    if (typeof issueReason === 'string') acc.issueReason = issueReason
+    else if (hasIssue === false || isActive === true) acc.issueReason = null
+  }
+
+  // 3. Update Supabase numbers table in background if configured
+  try {
+    const updatePayload = {
+      phone_number_id: phoneNumberId,
+      updated_at: new Date().toISOString()
+    }
+    if (typeof hasIssue === 'boolean') updatePayload.has_issue = hasIssue
+    if (typeof isActive === 'boolean') updatePayload['isActive'] = isActive
+    if (issueReason !== undefined) updatePayload.issue_reason = issueReason
+
+    await supabase.from('numbers').upsert(updatePayload, { onConflict: 'phone_number_id' })
+  } catch (err) {
+    console.warn('Could not sync to Supabase numbers table:', err.message)
+  }
+
+  const health = await checkPhoneNumberHealth(phoneNumberId)
+  return res.json({
+    success: true,
+    phoneNumberId,
+    hasIssue: health.hasIssue,
+    isActive: health.allowed,
+    issueReason: health.reason || null
+  })
+})
+
 // ── GET /debug — Verify configuration ──────────────────────────────────────────
-app.get('/debug', (req, res) => {
+app.get('/debug', async (req, res) => {
+  const accountsStatus = []
+  for (const [phone, acc] of Object.entries(ACCOUNTS)) {
+    const health = await checkPhoneNumberHealth(acc.phoneNumberId)
+    accountsStatus.push({
+      phone,
+      phoneNumberId: acc.phoneNumberId,
+      label: acc.label || phone,
+      hasIssue: health.hasIssue,
+      isActive: health.allowed,
+      issueReason: health.reason || null
+    })
+  }
+
   res.json({
     accountCount: Object.keys(ACCOUNTS).length,
     allowedPhoneIds: ALLOWED_PHONE_IDS,
     phoneToWaba: PHONE_TO_WABA,
+    accountsStatus,
+    cache: {
+      ttlMinutes: Math.round(NUMBERS_CACHE_TTL_MS / 60000),
+      lastUpdated: LAST_NUMBERS_CACHE_UPDATE ? new Date(LAST_NUMBERS_CACHE_UPDATE).toISOString() : null,
+      cachedCount: Object.keys(NUMBERS_CACHE).length
+    },
     count: ALLOWED_PHONE_IDS.length,
     hasSupabaseUrl: !!process.env.SUPABASE_URL,
     hasAccessToken: !!process.env.WA_ACCESS_TOKEN,
@@ -271,10 +487,38 @@ app.post('/send', async (req, res) => {
     phoneNumberId = '1057331837443942'
   }
 
-  // Validate phoneNumberId against whitelist
-  if (!phoneNumberId || !ALLOWED_PHONE_IDS.includes(phoneNumberId)) {
-    console.log(`⚠️ /send blocked — phoneNumberId "${phoneNumberId}" not in whitelist`)
-    return res.status(400).json({ success: false, error: 'Invalid or missing phoneNumberId' })
+  // Validate phoneNumberId health and issue status
+  const health = await checkPhoneNumberHealth(phoneNumberId)
+  if (!health.allowed) {
+    console.log(`⚠️ /send blocked — phoneNumberId "${phoneNumberId}": ${health.error}`)
+    const contactPhone = to ? (to.startsWith('+') ? to : '+' + to) : null
+
+    if (contactPhone) {
+      try {
+        const wabaId = PHONE_TO_WABA[phoneNumberId]
+        const token = getAccessTokenForPhoneId(phoneNumberId)
+        const renderedBody = await renderTemplate(tempName, data, wabaId, token)
+        await supabase.from('messages').insert({
+          phone_number_id: phoneNumberId,
+          contact_phone: contactPhone,
+          body: renderedBody,
+          direction: 'sent',
+          status: 'failed',
+          error: health.error,
+          timestamp: Date.now(),
+        })
+      } catch (e) {
+        console.error('Failed to log blocked send:', e.message)
+      }
+    }
+
+    return res.status(400).json({
+      success: false,
+      error: health.error,
+      reason: health.reason,
+      hasIssue: true,
+      phoneNumberId
+    })
   }
 
   const token = getAccessTokenForPhoneId(phoneNumberId)
@@ -382,10 +626,38 @@ app.post('/send-otp', async (req, res) => {
     phoneNumberId = '1057331837443942'
   }
 
-  // Validate phoneNumberId against whitelist
-  if (!phoneNumberId || !ALLOWED_PHONE_IDS.includes(phoneNumberId)) {
-    console.log(`⚠️ /send-otp blocked — phoneNumberId "${phoneNumberId}" not in whitelist`)
-    return res.status(400).json({ success: false, error: 'Invalid or missing phoneNumberId' })
+  // Validate phoneNumberId health and issue status
+  const health = await checkPhoneNumberHealth(phoneNumberId)
+  if (!health.allowed) {
+    console.log(`⚠️ /send-otp blocked — phoneNumberId "${phoneNumberId}": ${health.error}`)
+    const contactPhone = to ? (to.startsWith('+') ? to : '+' + to) : null
+
+    if (contactPhone) {
+      try {
+        const wabaId = PHONE_TO_WABA[phoneNumberId]
+        const token = getAccessTokenForPhoneId(phoneNumberId)
+        const renderedBody = await renderTemplate('otp_temp', [code], wabaId, token)
+        await supabase.from('messages').insert({
+          phone_number_id: phoneNumberId,
+          contact_phone: contactPhone,
+          body: renderedBody,
+          direction: 'sent',
+          status: 'failed',
+          error: health.error,
+          timestamp: Date.now(),
+        })
+      } catch (e) {
+        console.error('Failed to log blocked OTP send:', e.message)
+      }
+    }
+
+    return res.status(400).json({
+      success: false,
+      error: health.error,
+      reason: health.reason,
+      hasIssue: true,
+      phoneNumberId
+    })
   }
 
   const token = getAccessTokenForPhoneId(phoneNumberId)
