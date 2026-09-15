@@ -982,9 +982,15 @@
     // ── BACKEND BASE URL ───────────────────────────────────────────────────────
     // If frontend is served directly by the backend (same origin), relative '' is used.
     // If frontend is hosted separately (Vercel, Live Server, or file://), points to the backend.
-    const BACKEND_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? (window.location.port === '3000' ? '' : 'http://localhost:3000')
-      : (window.location.protocol === 'file:' ? 'http://localhost:3000' : (window.location.origin.includes('vercel.app') ? 'https://whatsappdashboard-production.up.railway.app' : ''));
+    const urlBackendParam = new URLSearchParams(window.location.search).get('backend');
+    if (urlBackendParam) {
+      try { localStorage.setItem('BACKEND_URL', urlBackendParam); } catch (e) {}
+    }
+    const BACKEND_URL = localStorage.getItem('BACKEND_URL') ||
+      urlBackendParam ||
+      ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? (window.location.port === '3000' ? '' : 'http://localhost:3000')
+        : (window.location.protocol === 'file:' ? 'http://localhost:3000' : (window.location.origin.includes('vercel.app') ? 'https://whatsappdashboard-production.up.railway.app' : '')));
 
     // ── LOGIN ──────────────────────────────────────────────────────────────────
     async function login() {
